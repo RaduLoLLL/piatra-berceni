@@ -1,5 +1,7 @@
 # Piatra Berceni – site de prezentare
 
+Online: https://piatra-berceni.pages.dev · Panou: https://piatra-berceni.pages.dev/admin/
+
 Site static, rapid, pentru Piatra Berceni SRL (pavele, borduri, piatră decorativă). Făcut cu [Astro](https://astro.build), cu panou de administrare [Decap CMS](https://decapcms.org) și găzduire pe Cloudflare Pages.
 
 ## Comenzi
@@ -42,14 +44,10 @@ Conținutul actual este **demonstrativ**:
 
 ## Lansare pe Cloudflare Pages
 
-1. Proiectul este în depozitul GitHub `RaduLoLLL/piatra-berceni`.
-2. În Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**, alege depozitul.
-   - Framework preset: **Astro**
-   - Build command: `npm run build`
-   - Output directory: `dist`
-   - Variabilă de mediu: `NODE_VERSION` = `22`
-3. Adaugă domeniul la **Custom domains**.
-4. De acum, orice modificare salvată în GitHub (inclusiv din panou) republică site-ul automat în ~1 minut.
+Proiectul Cloudflare Pages `piatra-berceni` este conectat la depozitul GitHub `RaduLoLLL/piatra-berceni` (build: `npm run build`, output: `dist`, Node 22 din `.node-version`).
+
+1. Pentru domeniul final: Cloudflare → piatra-berceni → **Custom domains**.
+2. De acum, orice modificare salvată în GitHub (inclusiv din panou) republică site-ul automat în ~1 minut.
 
 ### Formularul de ofertă
 
@@ -67,13 +65,11 @@ Protecția anti-spam constă într-un câmp ascuns și o verificare de timp, fă
 
 Panoul de la `/admin/` folosește autentificarea GitHub prin `functions/api/auth.js` și `functions/api/callback.js`.
 
-1. GitHub → **Settings → Developer settings → OAuth Apps → New OAuth App**
-   - Homepage URL: `https://domeniul-tau.ro`
-   - Authorization callback URL: `https://domeniul-tau.ro/api/callback`
-2. În Cloudflare Pages adaugă `GITHUB_CLIENT_ID` și `GITHUB_CLIENT_SECRET` (ca secret).
-3. Persoana care editează are nevoie de un cont GitHub cu acces de scriere la depozit.
+Aplicația OAuth există deja: **Piatra Berceni CMS** (GitHub → Settings → Developer settings → OAuth Apps), cu callback `https://piatra-berceni.pages.dev/api/callback`. În Cloudflare Pages sunt setate `GITHUB_CLIENT_ID` (text) și `GITHUB_CLIENT_SECRET` (secret).
 
-Panoul trebuie deschis pe același domeniu ca `base_url` din `public/admin/config.yml`.
+- **La mutarea pe domeniul final:** schimbă în aplicația OAuth *Homepage URL* și *Authorization callback URL* la `https://domeniul-final.ro/api/callback`. Panoul își ia singur adresa din domeniul pe care e deschis (`src/pages/admin/index.astro`), deci nu e nevoie de modificări în cod.
+- Persoana care editează are nevoie de un cont GitHub cu acces de scriere la depozit (Settings → Collaborators).
+- Token-urile GitHub expiră după 8 ore; după aceea panoul cere din nou autentificarea.
 
 ## Viteză
 
