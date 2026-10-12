@@ -1,0 +1,63 @@
+---
+import Baza from '../layouts/Baza.astro';
+import Firimituri from '../components/Firimituri.astro';
+import Icon from '../components/Icon.astro';
+import { servicii, urlOferta } from '../lib/date';
+import { schemaFirimituri } from '../lib/schema';
+
+const pasi = [
+	{ nume: 'Acasă', url: '/' },
+	{ nume: 'Servicii', url: '/servicii/' },
+];
+---
+
+<Baza titlu="Servicii" descriere={servicii.intro} schema={[schemaFirimituri(Astro.site!, pasi)]}>
+	<div class="container sectiune">
+		<Firimituri pasi={pasi} />
+		<h1>Servicii</h1>
+		<p class="lead">{servicii.intro}</p>
+		<ol class="servicii">
+			{
+				servicii.servicii.map((s) => (
+					<li>
+						<h2>{s.titlu}</h2>
+						<p class="text-secundar">{s.text}</p>
+					</li>
+				))
+			}
+		</ol>
+		<a class="buton" href={urlOferta()}><Icon nume="oferta" /> Cere ofertă</a>
+	</div>
+</Baza>
+
+<style>
+	.servicii {
+		display: grid;
+		gap: 16px;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+		margin: 32px 0;
+		padding: 0;
+		list-style: none;
+		counter-reset: serviciu;
+	}
+	.servicii li {
+		padding: 24px;
+		background: var(--suprafata);
+		border: 1px solid var(--linie);
+		border-radius: var(--raza);
+		counter-increment: serviciu;
+	}
+	.servicii li::before {
+		content: counter(serviciu, decimal-leading-zero);
+		display: block;
+		margin-bottom: 8px;
+		color: var(--accent);
+		font-weight: 800;
+	}
+	.servicii h2 {
+		font-size: 1.25rem;
+	}
+	.servicii p {
+		margin: 0;
+	}
+</style>

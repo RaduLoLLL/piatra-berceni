@@ -1,0 +1,65 @@
+---
+import Imagine from './Imagine.astro';
+import type { Lucrare } from '../lib/date';
+import { modelLucrare } from '../lib/vizual';
+
+interface Props {
+	lucrare: Lucrare;
+}
+const { lucrare } = Astro.props;
+const d = lucrare.data;
+const luna = new Intl.DateTimeFormat('ro-RO', { month: 'long', year: 'numeric' }).format(d.data);
+---
+
+<article class="lucrare">
+	<Imagine
+		foto={d.imagini[0]}
+		model={modelLucrare(lucrare)}
+		alt={d.imagini[0] ? d.titlu : ''}
+		sizes="(min-width: 1240px) 380px, (min-width: 600px) 45vw, 100vw"
+		class="lucrare__imagine"
+	/>
+	<div class="lucrare__corp">
+		{d.exemplu && <span class="eticheta-exemplu">Exemplu</span>}
+		<h3><a href={`/lucrari/${lucrare.id}/`}>{d.titlu}</a></h3>
+		<p class="text-secundar">
+			{d.localitate} · {luna}{d.suprafata_mp && ` · ${d.suprafata_mp} m²`}
+		</p>
+	</div>
+</article>
+
+<style>
+	.lucrare {
+		position: relative;
+		background: var(--suprafata);
+		border: 1px solid var(--linie);
+		border-radius: var(--raza);
+		overflow: hidden;
+	}
+	.lucrare :global(.lucrare__imagine) {
+		width: 100%;
+		aspect-ratio: 3 / 2;
+		object-fit: cover;
+	}
+	.lucrare__corp {
+		padding: 16px 18px 6px;
+	}
+	h3 {
+		margin-top: 6px;
+	}
+	h3 a {
+		color: var(--text);
+		text-decoration: none;
+	}
+	h3 a::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+	}
+	.lucrare:hover h3 a {
+		color: var(--accent);
+	}
+	p {
+		font-size: 0.9375rem;
+	}
+</style>

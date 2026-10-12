@@ -1,0 +1,296 @@
+---
+import { render } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Baza from '../../../layouts/Baza.astro';
+import Firimituri from '../../../components/Firimituri.astro';
+import Imagine from '../../../components/Imagine.astro';
+import CardProdus from '../../../components/CardProdus.astro';
+import Icon from '../../../components/Icon.astro';
+import { categorii, firma, formatPret, getProduse, linkWhatsapp, urlCategorie, urlOferta, urlProdus, type Produs } from '../../../lib/date';
+import { CULORI, NUME_CULORI } from '../../../lib/constante';
+import { schemaFirimituri } from '../../../lib/schema';
+import { modelProdus } from '../../../lib/vizual';
+
+export async function getStaticPaths() {
+	const produse = await getProduse();
+	return produse.map((p) => ({ params: { categorie: p.data.categorie, produs: p.id }, props: { produs: p, toate: produse } }));
+}
+
+const { produs, toate } = Astro.props as { produs: Produs; toate: Produs[] };
+const d = produs.data;
+const categorie = categorii.find((c) => c.slug === d.categorie)!;
+const { Content } = await render(produs);
+const pret = formatPret(produs);
+const similare = toate.filter((p) => p.data.categorie === d.categorie && p.id !== produs.id).slice(0, 3);
+const whatsapp = linkWhatsapp(`Bună ziua, aș dori o ofertă pentru ${d.nume}.`);
+
+const specificatii = [
+	['Grosime', d.grosime_cm && `${d.grosime_cm} cm`],
+	['Dimensiuni', d.dimensiuni],
+	[d.unitate_pret === 'ml' ? 'Bucăți / ml' : 'Bucăți / m²', d.buc_mp && new Intl.NumberFormat('ro-RO').format(d.buc_mp)],
+	['Greutate', d.greutate_kg_mp && `aprox. ${d.greutate_kg_mp} kg / m²`],
+	['Utilizare', d.utilizare],
+].filter((s): s is [string, string] => !!s[1]);
+
+const pasi = [
+	{ nume: 'Acasă', url: '/' },
+	{ nume: 'Produse', url: '/produse/' },
+	{ nume: categorie.nume, url: urlCategorie(categorie.slug) },
+	{ nume: d.nume, url: urlProdus(produs) },
+];
+
+const imagineOg = d.imagini[0] ? (await getImage({ src: d.imagini[0], width: 1200, format: 'jpg' })).src : undefined;
+
+// Schema Product doar când avem preț: fără ofertă, Google o raportează ca incompletă.
+const schema: Record<string, unknown>[] = [schemaFirimituri(Astro.site!, pasi)];
+if (d.pret) {
+	schema.push({
+		'@type': 'Product',
+		name: d.nume,
+		description: d.rezumat,
+		category: categorie.nume,
+		image: imagineOg ? new URL(imagineOg, Astro.site).href : undefined,
+		offers: {
+			'@type': 'Offer',
+			price: d.pret,
+			priceCurrency: 'RON',
+			availability: 'https://schema.org/InStock',
+			seller: { '@id': new URL('/#firma', Astro.site).href },
+		},
+	});
+}
+---
+
+<Baza titlu={d.nume} descriere={`${d.rezumat} ${pret ? `Preț: ${pret}.` : 'Cere ofertă.'} ${firma.nume_scurt}, ${firma.localitate}.`} schema={schema} imagine={imagineOg}>
+	<div class="container sectiune">
+		<Firimituri pasi={pasi} />
+
+		<div class="produs">
+			<div class="produs__galerie">
+				<Imagine
+					foto={d.imagini[0]}
+					model={modelProdus(produs)}
+					alt={d.imagini[0] ? d.nume : `Model de montaj – ${d.nume} (ilustrație)`}
+					sizes="(min-width: 1240px) 600px, (min-width: 900px) 50vw, 100vw"
+					prioritar
+					class="produs__imagine"
+				/>
+				{
+					d.imagini.length > 1 && (
+						<ul class="produs__miniaturi">
+							{d.imagini.slice(1).map((img, i) => (
+								<li>
+									<Imagine foto={img} model={modelProdus(produs)} alt={`${d.nume} – fotografia ${i + 2}`} sizes="(min-width: 900px) 25vw, 50vw" />
+								</li>
+							))}
+						</ul>
+					)
+				}
+				{!d.imagini.length && <p class="produs__nota">Ilustrație orientativă. Fotografiile produsului vor fi adăugate în curând.</p>}
+			</div>
+
+			<div class="produs__info">
+				<h1>{d.nume}</h1>
+				<p class="lead">{d.rezumat}</p>
+
+				<p class="produs__pret">
+					{pret ?? 'Preț la cerere'}
+					{pret && <span>Preț orientativ. Cere o ofertă pentru prețul final, cu transport.</span>}
+				</p>
+
+				{
+					d.culori.length > 0 && (
+						<div class="produs__culori">
+							<h2>Culori disponibile</h2>
+							<ul>
+								{d.culori.map((c) => (
+									<li>
+										<span style={`--c:${CULORI[c] ?? '#999'}`} />
+										{NUME_CULORI[c] ?? c}
+									</li>
+								))}
+							</ul>
+						</div>
+					)
+				}
+
+				<div class="produs__actiuni">
+					<a class="buton" href={urlOferta(d.nume)}><Icon nume="oferta" /> Cere ofertă pentru acest produs</a>
+					<a class="buton buton--contur" href={`tel:${firma.telefon_link}`}><Icon nume="telefon" /> {firma.telefon}</a>
+					{
+						whatsapp && (
+							<a class="buton buton--verde" href={whatsapp} rel="noopener">
+								<Icon nume="chat" /> WhatsApp
+							</a>
+						)
+					}
+				</div>
+
+				{
+					specificatii.length > 0 && (
+						<table class="produs__specificatii">
+							<caption class="sr-only">Specificații tehnice</caption>
+							<tbody>
+								{specificatii.map(([eticheta, valoare]) => (
+									<tr>
+										<th scope="row">{eticheta}</th>
+										<td>{valoare}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					)
+				}
+
+				{
+					d.fisa_tehnica && (
+						<a class="produs__fisa" href={d.fisa_tehnica} download>
+							<Icon nume="descarca" /> Descarcă fișa tehnică (PDF)
+						</a>
+					)
+				}
+
+				<div class="continut-text produs__descriere">
+					<Content />
+				</div>
+			</div>
+		</div>
+
+		{
+			similare.length > 0 && (
+				<section class="similare">
+					<div class="titlu-sectiune">
+						<h2>Alte produse din {categorie.nume.toLowerCase()}</h2>
+						<a href={urlCategorie(categorie.slug)}>Vezi toate</a>
+					</div>
+					<div class="grila">
+						{similare.map((p) => (
+							<CardProdus produs={p} />
+						))}
+					</div>
+				</section>
+			)
+		}
+	</div>
+</Baza>
+
+<style>
+	.produs {
+		display: grid;
+		gap: 32px;
+	}
+	@media (min-width: 900px) {
+		.produs {
+			grid-template-columns: 1fr 1fr;
+			gap: 48px;
+			align-items: start;
+		}
+		.produs__galerie {
+			position: sticky;
+			top: 24px;
+		}
+	}
+	.produs__galerie :global(.produs__imagine) {
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		object-fit: cover;
+		border-radius: var(--raza);
+		background: var(--suprafata-2);
+	}
+	.produs__miniaturi {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+		gap: 8px;
+		margin: 8px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+	.produs__miniaturi :global(img) {
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		object-fit: cover;
+		border-radius: var(--raza-mica);
+	}
+	.produs__nota {
+		margin-top: 8px;
+		font-size: 0.8125rem;
+		color: var(--text-2);
+	}
+	.produs__pret {
+		display: flex;
+		flex-direction: column;
+		margin: 20px 0;
+		font-size: 1.75rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+	}
+	.produs__pret span {
+		font-size: 0.8125rem;
+		font-weight: 400;
+		letter-spacing: 0;
+		color: var(--text-2);
+	}
+	.produs__culori h2 {
+		font-size: 1rem;
+		margin-bottom: 8px;
+	}
+	.produs__culori ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 16px;
+		margin: 0 0 24px;
+		padding: 0;
+		list-style: none;
+	}
+	.produs__culori li {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 0.9375rem;
+	}
+	.produs__culori li span {
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		background: var(--c);
+		box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+	}
+	.produs__actiuni {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		margin-bottom: 32px;
+	}
+	.produs__specificatii {
+		width: 100%;
+		border-collapse: collapse;
+		margin-bottom: 24px;
+		font-size: 0.9375rem;
+	}
+	.produs__specificatii th,
+	.produs__specificatii td {
+		padding: 10px 0;
+		border-bottom: 1px solid var(--linie);
+		text-align: left;
+		vertical-align: top;
+	}
+	.produs__specificatii th {
+		width: 40%;
+		padding-right: 16px;
+		color: var(--text-2);
+		font-weight: 600;
+	}
+	.produs__fisa {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-bottom: 24px;
+		font-weight: 600;
+	}
+	.produs__fisa :global(svg) {
+		width: 20px;
+	}
+	.similare {
+		margin-top: 64px;
+	}
+</style>

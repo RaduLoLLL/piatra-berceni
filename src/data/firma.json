@@ -1,0 +1,25 @@
+{
+  "nume": "Piatra Berceni SRL",
+  "nume_scurt": "Piatra Berceni",
+  "slogan": "Pavele, borduri și piatră decorativă în Berceni, Ilfov",
+  "telefon": "07xx xxx xxx",
+  "telefon_link": "+40700000000",
+  "whatsapp": "40700000000",
+  "email": "contact@exemplu.ro",
+  "adresa": "Strada Exemplu nr. 1",
+  "localitate": "Berceni",
+  "judet": "Ilfov",
+  "cod_postal": "077020",
+  "latitudine": 44.3176,
+  "longitudine": 26.1851,
+  "link_google_maps": "https://www.google.com/maps/search/?api=1&query=Piatra+Berceni+SRL",
+  "link_recenzii_google": "",
+  "facebook": "",
+  "program": [
+    { "zile": "Luni – Vineri", "ore": "08:00 – 18:00" },
+    { "zile": "Sâmbătă", "ore": "08:00 – 14:00" },
+    { "zile": "Duminică", "ore": "Închis" }
+  ],
+  "cui": "",
+  "reg_com": ""
+}

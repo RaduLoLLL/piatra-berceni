@@ -1,0 +1,254 @@
+:root {
+	--fundal: #f6f4ef;
+	--suprafata: #ffffff;
+	--suprafata-2: #efebe3;
+	--text: #1d1b18;
+	--text-2: #5c574f;
+	--linie: #e2ddd2;
+	--accent: #b3432a;
+	--accent-inchis: #8f3420;
+	--accent-text: #ffffff;
+	--piatra: #2a2825;
+	--piatra-text: #ece8e0;
+	--piatra-text-2: #b3ada2;
+	--verde: #1f7a4d;
+
+	--font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	--raza: 10px;
+	--raza-mica: 6px;
+	--umbra: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 16px rgb(0 0 0 / 0.06);
+	--latime: 1180px;
+	--margine: 16px;
+	--inaltime-bara: 64px;
+
+	color-scheme: light;
+}
+
+@media (min-width: 768px) {
+	:root {
+		--margine: 32px;
+	}
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+	scroll-padding-top: 24px;
+}
+
+body {
+	margin: 0;
+	background: var(--fundal);
+	color: var(--text);
+	font-family: var(--font);
+	font-size: 1.0625rem;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Loc pentru bara fixă de jos de pe telefon. */
+@media (max-width: 767px) {
+	body {
+		padding-bottom: calc(var(--inaltime-bara) + env(safe-area-inset-bottom));
+	}
+}
+
+img,
+svg {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}
+
+h1,
+h2,
+h3 {
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	margin: 0 0 0.5em;
+	text-wrap: balance;
+}
+
+h1 {
+	font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+	font-weight: 800;
+}
+
+h2 {
+	font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.125rem);
+	font-weight: 750;
+}
+
+h3 {
+	font-size: 1.1875rem;
+	font-weight: 700;
+}
+
+p {
+	margin: 0 0 1em;
+	text-wrap: pretty;
+}
+
+a {
+	color: var(--accent);
+	text-underline-offset: 0.18em;
+}
+
+a:hover {
+	color: var(--accent-inchis);
+}
+
+:focus-visible {
+	outline: 3px solid var(--accent);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+.container {
+	width: 100%;
+	max-width: calc(var(--latime) + var(--margine) * 2);
+	margin-inline: auto;
+	padding-inline: var(--margine);
+}
+
+.sectiune {
+	padding-block: clamp(40px, 6vw, 80px);
+}
+
+.sectiune--alt {
+	background: var(--suprafata-2);
+}
+
+.titlu-sectiune {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	justify-content: space-between;
+	gap: 8px 24px;
+	margin-bottom: 24px;
+}
+
+.titlu-sectiune h2 {
+	margin: 0;
+}
+
+.supratitlu {
+	display: block;
+	font-size: 0.8125rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--accent);
+	margin-bottom: 8px;
+}
+
+.text-secundar {
+	color: var(--text-2);
+}
+
+.lead {
+	font-size: 1.1875rem;
+	color: var(--text-2);
+	max-width: 60ch;
+}
+
+.buton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 48px;
+	padding: 12px 22px;
+	border: 2px solid transparent;
+	border-radius: var(--raza);
+	background: var(--accent);
+	color: var(--accent-text);
+	font: inherit;
+	font-weight: 700;
+	line-height: 1.2;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background-color 0.15s;
+}
+
+.buton:hover {
+	background: var(--accent-inchis);
+	color: var(--accent-text);
+}
+
+.buton--contur {
+	background: transparent;
+	border-color: currentColor;
+	color: var(--text);
+}
+
+.buton--contur:hover {
+	background: var(--text);
+	border-color: var(--text);
+	color: var(--fundal);
+}
+
+.buton--verde {
+	background: var(--verde);
+}
+
+.buton--verde:hover {
+	background: #17603c;
+}
+
+.buton svg {
+	width: 20px;
+	height: 20px;
+	flex: none;
+}
+
+.grila {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+}
+
+.continut-text {
+	max-width: 68ch;
+}
+
+.continut-text h2 {
+	margin-top: 1.5em;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.eticheta-exemplu {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: #fff3cd;
+	color: #6b4e00;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	* {
+		transition: none !important;
+		scroll-behavior: auto !important;
+	}
+}

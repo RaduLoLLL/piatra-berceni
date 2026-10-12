@@ -1,0 +1,38 @@
+---
+import Baza from '../../layouts/Baza.astro';
+import Firimituri from '../../components/Firimituri.astro';
+import CardLucrare from '../../components/CardLucrare.astro';
+import { getLucrari, urlOferta } from '../../lib/date';
+import { schemaFirimituri } from '../../lib/schema';
+
+const lucrari = await getLucrari();
+const pasi = [
+	{ nume: 'Acasă', url: '/' },
+	{ nume: 'Lucrări', url: '/lucrari/' },
+];
+---
+
+<Baza
+	titlu="Lucrări realizate"
+	descriere="Curți, alei și grădini amenajate cu pavelele și piatra noastră. Vezi fotografii și cere o ofertă pentru proiectul tău."
+	schema={[schemaFirimituri(Astro.site!, pasi)]}
+>
+	<div class="container sectiune">
+		<Firimituri pasi={pasi} />
+		<h1>Lucrări realizate</h1>
+		<p class="lead">Câteva dintre curțile, aleile și grădinile amenajate cu materialele noastre.</p>
+		{
+			lucrari.length > 0 ? (
+				<div class="grila">
+					{lucrari.map((l) => (
+						<CardLucrare lucrare={l} />
+					))}
+				</div>
+			) : (
+				<p>
+					Adăugăm fotografii în curând. Până atunci, <a href={urlOferta()}>cere-ne o ofertă</a>.
+				</p>
+			)
+		}
+	</div>
+</Baza>

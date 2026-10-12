@@ -1,0 +1,21 @@
+{
+  "intro": "Pe lângă vânzarea materialelor, te ajutăm cu tot ce ține de proiectul tău.",
+  "servicii": [
+    {
+      "titlu": "Transport",
+      "text": "Livrăm materialele direct la adresa ta, în Ilfov și București. Costul depinde de distanță și de cantitate."
+    },
+    {
+      "titlu": "Montaj",
+      "text": "Putem recomanda echipe de montaj cu experiență, pentru alei, curți și parcări."
+    },
+    {
+      "titlu": "Calcul de materiale",
+      "text": "Trimite-ne dimensiunile suprafeței și îți calculăm necesarul de pavele, borduri, nisip și balast."
+    },
+    {
+      "titlu": "Consultanță",
+      "text": "Îți recomandăm grosimea și modelul potrivit în funcție de trafic și de stilul casei."
+    }
+  ]
+}

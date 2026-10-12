@@ -1,0 +1,111 @@
+---
+import { render } from 'astro:content';
+import Baza from '../../layouts/Baza.astro';
+import Firimituri from '../../components/Firimituri.astro';
+import Imagine from '../../components/Imagine.astro';
+import Icon from '../../components/Icon.astro';
+import { firma, getLucrari, getProduse, urlOferta, urlProdus, type Lucrare } from '../../lib/date';
+import { schemaFirimituri } from '../../lib/schema';
+import { modelLucrare } from '../../lib/vizual';
+
+export async function getStaticPaths() {
+	const lucrari = await getLucrari();
+	return lucrari.map((l) => ({ params: { lucrare: l.id }, props: { lucrare: l } }));
+}
+
+const { lucrare } = Astro.props as { lucrare: Lucrare };
+const d = lucrare.data;
+const { Content } = await render(lucrare);
+const produse = await getProduse();
+// Produsele folosite devin linkuri când numele lor se potrivește cu un produs din catalog.
+const produseFolosite = d.produse.map((nume) => ({ nume, produs: produse.find((p) => p.data.nume === nume) }));
+const luna = new Intl.DateTimeFormat('ro-RO', { month: 'long', year: 'numeric' }).format(d.data);
+
+const pasi = [
+	{ nume: 'Acasă', url: '/' },
+	{ nume: 'Lucrări', url: '/lucrari/' },
+	{ nume: d.titlu, url: `/lucrari/${lucrare.id}/` },
+];
+---
+
+<Baza titlu={d.titlu} descriere={`${d.titlu} în ${d.localitate}. Lucrare realizată cu materiale de la ${firma.nume_scurt}.`} schema={[schemaFirimituri(Astro.site!, pasi)]}>
+	<div class="container sectiune">
+		<Firimituri pasi={pasi} />
+		{d.exemplu && <span class="eticheta-exemplu">Exemplu</span>}
+		<h1>{d.titlu}</h1>
+		<p class="lead">
+			{d.localitate} · {luna}{d.suprafata_mp && ` · ${d.suprafata_mp} m²`}
+		</p>
+
+		<div class="galerie">
+			{
+				d.imagini.length ? (
+					d.imagini.map((img, i) => (
+						<Imagine foto={img} model={modelLucrare(lucrare)} alt={`${d.titlu} – fotografia ${i + 1}`} sizes="(min-width: 900px) 50vw, 100vw" prioritar={i === 0} />
+					))
+				) : (
+					<Imagine model={modelLucrare(lucrare)} alt="" sizes="100vw" prioritar />
+				)
+			}
+		</div>
+
+		<div class="detalii">
+			<div class="continut-text">
+				<Content />
+			</div>
+			{
+				produseFolosite.length > 0 && (
+					<aside>
+						<h2>Produse folosite</h2>
+						<ul>
+							{produseFolosite.map(({ nume, produs }) => (
+								<li>{produs ? <a href={urlProdus(produs)}>{nume}</a> : nume}</li>
+							))}
+						</ul>
+						<a class="buton" href={urlOferta()}>
+							<Icon nume="oferta" /> Vreau ceva asemănător
+						</a>
+					</aside>
+				)
+			}
+		</div>
+	</div>
+</Baza>
+
+<style>
+	.galerie {
+		display: grid;
+		gap: 12px;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+		margin: 24px 0 32px;
+	}
+	.galerie :global(img) {
+		width: 100%;
+		aspect-ratio: 3 / 2;
+		object-fit: cover;
+		border-radius: var(--raza);
+	}
+	.detalii {
+		display: grid;
+		gap: 32px;
+	}
+	@media (min-width: 900px) {
+		.detalii {
+			grid-template-columns: 2fr 1fr;
+		}
+	}
+	aside {
+		padding: 20px;
+		background: var(--suprafata);
+		border: 1px solid var(--linie);
+		border-radius: var(--raza);
+		align-self: start;
+	}
+	aside h2 {
+		font-size: 1.125rem;
+	}
+	aside ul {
+		padding-left: 20px;
+		margin: 0 0 20px;
+	}
+</style>

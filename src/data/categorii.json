@@ -1,0 +1,28 @@
+{
+  "categorii": [
+    {
+      "slug": "pavele",
+      "nume": "Pavele",
+      "descriere": "Pavele din beton vibropresat pentru curți, alei, parcări și trotuare.",
+      "forma": "spic"
+    },
+    {
+      "slug": "borduri",
+      "nume": "Borduri",
+      "descriere": "Borduri pentru grădină, trotuar și carosabil, pentru margini curate și stabile.",
+      "forma": "bordura"
+    },
+    {
+      "slug": "piatra-decorativa",
+      "nume": "Piatră decorativă",
+      "descriere": "Piatră naturală pentru grădini, alei și ronduri de flori, în mai multe granulații.",
+      "forma": "pietris"
+    },
+    {
+      "slug": "pasi-japonezi",
+      "nume": "Pași japonezi",
+      "descriere": "Dale de piatră pentru poteci prin gazon, fără fundație complicată.",
+      "forma": "pasi"
+    }
+  ]
+}

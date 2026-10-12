@@ -1,0 +1,173 @@
+---
+import Baza from '../layouts/Baza.astro';
+import Firimituri from '../components/Firimituri.astro';
+import FormularOferta from '../components/FormularOferta.astro';
+import Icon from '../components/Icon.astro';
+import { firma, linkWhatsapp } from '../lib/date';
+import { schemaFirimituri, schemaFirma } from '../lib/schema';
+import { URL_FUNDAL } from '../lib/vizual';
+
+const whatsapp = linkWhatsapp('Bună ziua, ');
+const pasi = [
+	{ nume: 'Acasă', url: '/' },
+	{ nume: 'Contact', url: '/contact/' },
+];
+const coordonate = firma.latitudine && firma.longitudine ? `${firma.latitudine},${firma.longitudine}` : `${firma.adresa}, ${firma.localitate}`;
+const hartaEmbed = `https://www.google.com/maps?q=${encodeURIComponent(coordonate)}&z=15&output=embed`;
+---
+
+<Baza
+	titlu="Contact și ofertă"
+	descriere={`Sună-ne la ${firma.telefon}, scrie-ne pe WhatsApp sau cere o ofertă online. ${firma.adresa}, ${firma.localitate}, ${firma.judet}.`}
+	schema={[schemaFirma(Astro.site!), schemaFirimituri(Astro.site!, pasi)]}
+>
+	<div class="container sectiune">
+		<Firimituri pasi={pasi} />
+		<h1>Contact</h1>
+
+		<div class="contact">
+			<div class="contact__info">
+				<ul class="contact__lista">
+					<li>
+						<Icon nume="telefon" />
+						<div>
+							<strong>Telefon</strong>
+							<a href={`tel:${firma.telefon_link}`}>{firma.telefon}</a>
+						</div>
+					</li>
+					{
+						whatsapp && (
+							<li>
+								<Icon nume="chat" />
+								<div>
+									<strong>WhatsApp</strong>
+									<a href={whatsapp} rel="noopener">
+										Scrie-ne un mesaj
+									</a>
+								</div>
+							</li>
+						)
+					}
+					<li>
+						<Icon nume="mail" />
+						<div>
+							<strong>Email</strong>
+							<a href={`mailto:${firma.email}`}>{firma.email}</a>
+						</div>
+					</li>
+					<li>
+						<Icon nume="pin" />
+						<div>
+							<strong>Adresă</strong>
+							<span>{firma.adresa}, {firma.localitate}, jud. {firma.judet}</span>
+							<a href={firma.link_google_maps} rel="noopener">Deschide traseul în Google Maps</a>
+						</div>
+					</li>
+					<li>
+						<Icon nume="ceas" />
+						<div>
+							<strong>Program</strong>
+							{
+								firma.program.map((p) => (
+									<span>
+										{p.zile}: {p.ore}
+									</span>
+								))
+							}
+						</div>
+					</li>
+				</ul>
+
+				<!-- Harta Google se încarcă doar la cerere: altfel ar adăuga ~1 MB la fiecare vizită. -->
+				<div class="harta" style={`--model: url(${URL_FUNDAL})`} data-src={hartaEmbed}>
+					<button class="buton" type="button">
+						<Icon nume="pin" /> Arată harta
+					</button>
+				</div>
+			</div>
+
+			<div>
+				<h2>Cere o ofertă</h2>
+				<p class="text-secundar">Completează formularul și te sunăm noi. Câmpurile marcate cu * sunt obligatorii.</p>
+				<FormularOferta />
+			</div>
+		</div>
+	</div>
+</Baza>
+
+<script is:inline>
+	(function () {
+		var harta = document.querySelector('.harta');
+		if (!harta) return;
+		harta.querySelector('button').addEventListener('click', function () {
+			var f = document.createElement('iframe');
+			f.src = harta.dataset.src;
+			f.title = 'Harta locației';
+			f.loading = 'lazy';
+			f.referrerPolicy = 'no-referrer-when-downgrade';
+			harta.replaceChildren(f);
+		});
+	})();
+</script>
+
+<style>
+	.contact {
+		display: grid;
+		gap: 40px;
+	}
+	@media (min-width: 960px) {
+		.contact {
+			grid-template-columns: 5fr 7fr;
+			gap: 56px;
+		}
+	}
+	.contact__lista {
+		display: grid;
+		gap: 20px;
+		margin: 0 0 24px;
+		padding: 0;
+		list-style: none;
+	}
+	.contact__lista li {
+		display: flex;
+		gap: 14px;
+	}
+	.contact__lista li > :global(svg) {
+		flex: none;
+		width: 40px;
+		height: 40px;
+		padding: 9px;
+		border-radius: 50%;
+		background: var(--suprafata-2);
+		color: var(--accent);
+	}
+	.contact__lista div {
+		display: flex;
+		flex-direction: column;
+	}
+	.contact__lista strong {
+		font-size: 0.8125rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--text-2);
+	}
+	.contact__lista a {
+		font-weight: 600;
+	}
+	.harta {
+		position: relative;
+		display: grid;
+		place-items: center;
+		aspect-ratio: 4 / 3;
+		border-radius: var(--raza);
+		overflow: hidden;
+		background: var(--piatra) var(--model) center / cover no-repeat;
+	}
+	.harta :global(iframe) {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		border: 0;
+	}
+</style>

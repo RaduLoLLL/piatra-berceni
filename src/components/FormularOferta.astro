@@ -1,0 +1,145 @@
+---
+// Formular simplu, funcționează și fără JavaScript. Trimiterea e gestionată de functions/api/oferta.js (Cloudflare Pages).
+import { firma, getProduse } from '../lib/date';
+const produse = await getProduse();
+---
+
+<form class="formular" method="post" action="/api/oferta" id="oferta">
+	<p class="formular__eroare" role="alert" hidden data-eroare="1">Te rugăm să completezi numele și un număr de telefon valid.</p>
+	<p class="formular__eroare" role="alert" hidden data-eroare="2">
+		Nu am putut trimite cererea. Te rugăm să ne suni la <a href={`tel:${firma.telefon_link}`}>{firma.telefon}</a>.
+	</p>
+	<div class="formular__rand">
+		<label>
+			<span>Nume *</span>
+			<input name="nume" required autocomplete="name" maxlength="100" />
+		</label>
+		<label>
+			<span>Telefon *</span>
+			<input name="telefon" type="tel" required autocomplete="tel" inputmode="tel" maxlength="30" />
+		</label>
+	</div>
+	<div class="formular__rand">
+		<label>
+			<span>Email</span>
+			<input name="email" type="email" autocomplete="email" maxlength="120" />
+		</label>
+		<label>
+			<span>Localitate</span>
+			<input name="localitate" autocomplete="address-level2" maxlength="80" />
+		</label>
+	</div>
+	<div class="formular__rand">
+		<label>
+			<span>Produs dorit</span>
+			<input name="produs" list="lista-produse" maxlength="120" placeholder="Ex.: Pavele dreptunghiulare 6 cm" />
+			<datalist id="lista-produse">
+				{produse.map((p) => <option value={p.data.nume} />)}
+			</datalist>
+		</label>
+		<label>
+			<span>Suprafață aproximativă (m²)</span>
+			<input name="suprafata" inputmode="decimal" maxlength="20" />
+		</label>
+	</div>
+	<label>
+		<span>Detalii</span>
+		<textarea name="mesaj" rows="4" maxlength="2000" placeholder="Ce vrei să amenajezi? Ai nevoie de transport sau montaj?"></textarea>
+	</label>
+
+	<!-- Capcană pentru roboți: câmp invizibil pentru oameni. -->
+	<label class="formular__capcana" aria-hidden="true">
+		Nu completa acest câmp
+		<input name="website" tabindex="-1" autocomplete="off" />
+	</label>
+	<input type="hidden" name="t" value="" />
+
+	<button class="buton" type="submit">Trimite cererea</button>
+	<p class="formular__nota">
+		Te contactăm în cel mai scurt timp. Folosim datele doar pentru a răspunde cererii tale.
+	</p>
+</form>
+
+<script is:inline>
+	(function () {
+		var f = document.getElementById('oferta');
+		if (!f) return;
+		f.elements.t.value = Date.now();
+		var q = new URLSearchParams(location.search);
+		var produs = q.get('produs');
+		if (produs) f.elements.produs.value = produs.slice(0, 120);
+		var eroare = /^[12]$/.test(q.get('eroare')) && f.querySelector('[data-eroare="' + q.get('eroare') + '"]');
+		if (eroare) eroare.hidden = false;
+	})();
+</script>
+
+<style>
+	.formular {
+		display: grid;
+		gap: 16px;
+		padding: clamp(20px, 4vw, 32px);
+		background: var(--suprafata);
+		border: 1px solid var(--linie);
+		border-radius: var(--raza);
+	}
+	.formular__rand {
+		display: grid;
+		gap: 16px;
+	}
+	@media (min-width: 600px) {
+		.formular__rand {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+	label {
+		display: grid;
+		gap: 6px;
+		font-weight: 600;
+		font-size: 0.9375rem;
+	}
+	input,
+	textarea {
+		width: 100%;
+		min-height: 48px;
+		padding: 10px 14px;
+		border: 1px solid #cdc7bb;
+		border-radius: var(--raza-mica);
+		background: var(--fundal);
+		color: var(--text);
+		font: inherit;
+		font-weight: 400;
+	}
+	input:focus,
+	textarea:focus {
+		outline: 2px solid var(--accent);
+		outline-offset: 0;
+		border-color: var(--accent);
+		background: var(--suprafata);
+	}
+	textarea {
+		resize: vertical;
+	}
+	.formular__eroare {
+		margin: 0;
+		padding: 12px 16px;
+		border-radius: var(--raza-mica);
+		background: #fdecea;
+		color: #8a1c10;
+		font-weight: 600;
+	}
+	.formular__eroare[hidden] {
+		display: none;
+	}
+	.formular__capcana {
+		position: absolute;
+		left: -9999px;
+	}
+	button {
+		justify-self: start;
+	}
+	.formular__nota {
+		margin: 0;
+		font-size: 0.8125rem;
+		color: var(--text-2);
+	}
+</style>

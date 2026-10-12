@@ -1,0 +1,84 @@
+---
+import Imagine from './Imagine.astro';
+import Icon from './Icon.astro';
+import { urlCategorie, type Categorie, type Produs } from '../lib/date';
+import { modelCategorie } from '../lib/vizual';
+
+interface Props {
+	categorie: Categorie;
+	produse: Produs[];
+}
+const { categorie, produse } = Astro.props;
+const dinCategorie = produse.filter((p) => p.data.categorie === categorie.slug);
+const foto = dinCategorie.find((p) => p.data.imagini.length)?.data.imagini[0];
+---
+
+<a class="categorie" href={urlCategorie(categorie.slug)}>
+	<Imagine
+		foto={foto}
+		model={modelCategorie(categorie, produse)}
+		alt=""
+		sizes="(min-width: 1240px) 280px, (min-width: 600px) 45vw, 100vw"
+		class="categorie__imagine"
+	/>
+	<span class="categorie__text">
+		<span class="categorie__nume">{categorie.nume} <Icon nume="sageata" /></span>
+		<span class="categorie__descriere">{categorie.descriere}</span>
+		<span class="categorie__numar">{dinCategorie.length} {dinCategorie.length === 1 ? 'produs' : 'produse'}</span>
+	</span>
+</a>
+
+<style>
+	.categorie {
+		display: flex;
+		flex-direction: column;
+		background: var(--suprafata);
+		border: 1px solid var(--linie);
+		border-radius: var(--raza);
+		overflow: hidden;
+		color: var(--text);
+		text-decoration: none;
+		transition: box-shadow 0.15s, transform 0.15s;
+	}
+	.categorie:hover {
+		color: var(--text);
+		box-shadow: var(--umbra);
+		transform: translateY(-2px);
+	}
+	.categorie :global(.categorie__imagine) {
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
+	}
+	.categorie__text {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 16px 18px 18px;
+	}
+	.categorie__nume {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 1.25rem;
+		font-weight: 750;
+		letter-spacing: -0.01em;
+	}
+	.categorie__nume :global(svg) {
+		width: 20px;
+		color: var(--accent);
+		transition: transform 0.15s;
+	}
+	.categorie:hover .categorie__nume :global(svg) {
+		transform: translateX(4px);
+	}
+	.categorie__descriere {
+		color: var(--text-2);
+		font-size: 0.9375rem;
+	}
+	.categorie__numar {
+		font-size: 0.8125rem;
+		font-weight: 700;
+		color: var(--accent);
+	}
+</style>

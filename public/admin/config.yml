@@ -1,0 +1,264 @@
+# Configurarea panoului de administrare (Decap CMS).
+# Fiecare salvare din panou devine un commit în GitHub, iar Cloudflare Pages republică site-ul automat.
+
+backend:
+  name: github
+  repo: RaduLoLLL/piatra-berceni
+  branch: main
+  # Autentificarea cu GitHub trece prin functions/api/auth.js și functions/api/callback.js.
+  # base_url, site_url și display_url se completează automat cu domeniul curent (src/pages/admin/index.astro).
+  auth_endpoint: api/auth
+  commit_messages:
+    create: 'Adăugat {{collection}} „{{slug}}”'
+    update: 'Modificat {{collection}} „{{slug}}”'
+    delete: 'Șters {{collection}} „{{slug}}”'
+    uploadMedia: 'Încărcat „{{path}}”'
+    deleteMedia: 'Șters „{{path}}”'
+
+# Pe calculatorul local (npm run cms), panoul scrie direct în fișiere, fără GitHub.
+local_backend: true
+
+locale: ro
+logo_url: /favicon.svg
+
+media_folder: src/assets/uploads
+public_folder: ../../assets/uploads
+
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: '-'
+
+collections:
+  - name: produse
+    label: Produse
+    label_singular: Produs
+    description: Produsele din catalog. Fotografiile se optimizează automat la publicare.
+    folder: src/content/produse
+    create: true
+    slug: '{{nume}}'
+    identifier_field: nume
+    editor:
+      preview: false
+    summary: '{{nume}} · {{categorie}}'
+    sortable_fields: [nume, categorie, ordine]
+    view_groups:
+      - { label: Categorie, field: categorie }
+    media_folder: ../../assets/produse
+    public_folder: ../../assets/produse
+    fields:
+      - { label: Nume produs, name: nume, widget: string }
+      - label: Categorie
+        name: categorie
+        widget: relation
+        collection: setari
+        file: categorii
+        search_fields: ['categorii.*.nume']
+        value_field: 'categorii.*.slug'
+        display_fields: ['categorii.*.nume']
+      - { label: Publicat pe site, name: publicat, widget: boolean, default: true, required: false, hint: Debifează ca să ascunzi produsul fără să-l ștergi. }
+      - { label: Apare pe prima pagină, name: recomandat, widget: boolean, default: false, required: false }
+      - { label: Ordine în listă, name: ordine, widget: number, value_type: int, default: 100, hint: Numerele mai mici apar primele. }
+      - { label: Rezumat (o propoziție), name: rezumat, widget: text }
+      - label: Fotografii
+        name: imagini
+        widget: list
+        required: false
+        hint: Prima fotografie este cea principală. Încarcă poze JPG sau PNG, cât mai mari; site-ul le micșorează singur.
+        field: { label: Fotografie, name: foto, widget: image }
+      - label: Desen afișat când nu există fotografii
+        name: forma
+        widget: select
+        default: dreptunghi
+        options:
+          - { label: Pavele dreptunghiulare, value: dreptunghi }
+          - { label: Pavele în spic, value: spic }
+          - { label: Pavele pătrate / cubice, value: patrat }
+          - { label: Dale mari, value: dala }
+          - { label: Borduri, value: bordura }
+          - { label: Pietriș / piatră decorativă, value: pietris }
+          - { label: Pași japonezi, value: pasi }
+      - label: Culori disponibile
+        name: culori
+        widget: select
+        multiple: true
+        required: false
+        options:
+          - { label: Gri, value: gri }
+          - { label: Antracit, value: antracit }
+          - { label: Negru, value: negru }
+          - { label: Roșu, value: rosu }
+          - { label: Cărămiziu, value: caramiziu }
+          - { label: Maro, value: maro }
+          - { label: Galben, value: galben }
+          - { label: Bej, value: bej }
+          - { label: Alb, value: alb }
+          - { label: Verde, value: verde }
+          - { label: Mix toamnă, value: mix toamna }
+      - { label: Grosime (cm), name: grosime_cm, widget: number, value_type: float, required: false }
+      - { label: Dimensiuni, name: dimensiuni, widget: string, required: false, hint: 'Ex.: 20 × 10 cm' }
+      - { label: Bucăți pe m² (sau pe ml la borduri), name: buc_mp, widget: number, value_type: float, required: false }
+      - { label: Greutate (kg / m²), name: greutate_kg_mp, widget: number, value_type: float, required: false }
+      - { label: Utilizare, name: utilizare, widget: string, required: false, hint: 'Ex.: Alei, terase, trafic auto ușor' }
+      - { label: Preț (lei), name: pret, widget: number, value_type: float, required: false, hint: Lasă gol pentru „Preț la cerere”. }
+      - label: Preț pe
+        name: unitate_pret
+        widget: select
+        default: m²
+        options: [m², ml, buc, tonă, sac]
+      - label: Fișă tehnică (PDF)
+        name: fisa_tehnica
+        widget: file
+        required: false
+        media_folder: /public/fise
+        public_folder: /fise
+      - { label: Descriere, name: body, widget: markdown, buttons: [bold, italic, link, bulleted-list, numbered-list], editor_components: [] }
+
+  - name: lucrari
+    label: Lucrări realizate
+    label_singular: Lucrare
+    folder: src/content/lucrari
+    create: true
+    slug: '{{titlu}}'
+    identifier_field: titlu
+    editor:
+      preview: false
+    summary: '{{titlu}} · {{localitate}}'
+    sortable_fields: [titlu, data]
+    media_folder: ../../assets/lucrari
+    public_folder: ../../assets/lucrari
+    fields:
+      - { label: Titlu, name: titlu, widget: string }
+      - { label: Publicat pe site, name: publicat, widget: boolean, default: true, required: false }
+      - { label: Marcată ca exemplu, name: exemplu, widget: boolean, default: false, required: false, hint: Debifează după ce înlocuiești conținutul demonstrativ. }
+      - { label: Data, name: data, widget: datetime, time_format: false, date_format: DD.MM.YYYY, format: YYYY-MM-DD }
+      - { label: Localitate, name: localitate, widget: string }
+      - { label: Suprafață (m²), name: suprafata_mp, widget: number, value_type: float, required: false }
+      - label: Fotografii
+        name: imagini
+        widget: list
+        required: false
+        field: { label: Fotografie, name: foto, widget: image }
+      - label: Produse folosite
+        name: produse
+        widget: relation
+        collection: produse
+        search_fields: [nume]
+        value_field: nume
+        display_fields: [nume]
+        multiple: true
+        required: false
+      - label: Desen afișat când nu există fotografii
+        name: forma
+        widget: select
+        default: spic
+        options:
+          - { label: Pavele dreptunghiulare, value: dreptunghi }
+          - { label: Pavele în spic, value: spic }
+          - { label: Pavele pătrate / cubice, value: patrat }
+          - { label: Dale mari, value: dala }
+          - { label: Borduri, value: bordura }
+          - { label: Pietriș / piatră decorativă, value: pietris }
+          - { label: Pași japonezi, value: pasi }
+      - { label: Descriere, name: body, widget: markdown, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
+
+  - name: pagini
+    label: Pagini
+    editor:
+      preview: false
+    files:
+      - name: despre
+        label: Despre noi
+        file: src/content/pagini/despre.md
+        fields:
+          - { label: Titlu, name: titlu, widget: string }
+          - { label: Descriere pentru Google (max. 160 caractere), name: descriere, widget: text }
+          - { label: Conținut, name: body, widget: markdown }
+
+  - name: setari
+    label: Setări site
+    editor:
+      preview: false
+    files:
+      - name: firma
+        label: Date firmă și contact
+        file: src/data/firma.json
+        fields:
+          - { label: Denumire firmă, name: nume, widget: string }
+          - { label: Nume scurt (logo), name: nume_scurt, widget: string }
+          - { label: Slogan, name: slogan, widget: string }
+          - { label: Telefon (afișat), name: telefon, widget: string, hint: 'Ex.: 0722 123 456' }
+          - { label: Telefon (format internațional), name: telefon_link, widget: string, hint: 'Ex.: +40722123456' }
+          - { label: Număr WhatsApp, name: whatsapp, widget: string, required: false, hint: 'Doar cifre, cu prefixul țării, fără +. Ex.: 40722123456. Lasă gol ca să ascunzi butonul.' }
+          - { label: Email, name: email, widget: string }
+          - { label: Adresă (stradă și număr), name: adresa, widget: string }
+          - { label: Localitate, name: localitate, widget: string }
+          - { label: Județ, name: judet, widget: string }
+          - { label: Cod poștal, name: cod_postal, widget: string, required: false }
+          - { label: Latitudine, name: latitudine, widget: number, value_type: float, required: false, hint: Din Google Maps, click dreapta pe locație. }
+          - { label: Longitudine, name: longitudine, widget: number, value_type: float, required: false }
+          - { label: Link Google Maps (traseu), name: link_google_maps, widget: string }
+          - { label: Link recenzii Google, name: link_recenzii_google, widget: string, required: false }
+          - { label: Pagina de Facebook, name: facebook, widget: string, required: false }
+          - label: Program
+            name: program
+            widget: list
+            summary: '{{zile}}: {{ore}}'
+            fields:
+              - { label: Zile, name: zile, widget: string, hint: 'Ex.: Luni – Vineri' }
+              - { label: Ore, name: ore, widget: string, hint: 'Ex.: 08:00 – 18:00 sau Închis' }
+          - { label: CUI, name: cui, widget: string, required: false }
+          - { label: Nr. Registrul Comerțului, name: reg_com, widget: string, required: false }
+
+      - name: acasa
+        label: Prima pagină
+        file: src/data/acasa.json
+        fields:
+          - { label: Titlu mare, name: titlu, widget: string }
+          - { label: Subtitlu, name: subtitlu, widget: text }
+          - label: Avantaje
+            name: avantaje
+            widget: list
+            summary: '{{titlu}}'
+            fields:
+              - { label: Titlu, name: titlu, widget: string }
+              - { label: Text, name: text, widget: text }
+
+      - name: categorii
+        label: Categorii de produse
+        file: src/data/categorii.json
+        fields:
+          - label: Categorii
+            name: categorii
+            widget: list
+            summary: '{{nume}}'
+            hint: Ordinea de aici este ordinea din meniu și din catalog.
+            fields:
+              - { label: Nume, name: nume, widget: string }
+              - { label: Adresă în site (slug), name: slug, widget: string, pattern: ['^[a-z0-9-]+$', 'Doar litere mici fără diacritice, cifre și cratimă'], hint: 'Ex.: piatra-decorativa. Nu o schimba după lansare.' }
+              - { label: Descriere, name: descriere, widget: text }
+              - label: Desen
+                name: forma
+                widget: select
+                default: dreptunghi
+                options:
+                  - { label: Pavele dreptunghiulare, value: dreptunghi }
+                  - { label: Pavele în spic, value: spic }
+                  - { label: Pavele pătrate / cubice, value: patrat }
+                  - { label: Dale mari, value: dala }
+                  - { label: Borduri, value: bordura }
+                  - { label: Pietriș / piatră decorativă, value: pietris }
+                  - { label: Pași japonezi, value: pasi }
+
+      - name: servicii
+        label: Servicii
+        file: src/data/servicii.json
+        fields:
+          - { label: Introducere, name: intro, widget: text }
+          - label: Servicii
+            name: servicii
+            widget: list
+            summary: '{{titlu}}'
+            fields:
+              - { label: Titlu, name: titlu, widget: string }
+              - { label: Text, name: text, widget: text }

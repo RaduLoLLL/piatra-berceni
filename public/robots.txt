@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /multumim/
+
+Sitemap: https://piatraberceni.ro/sitemap-index.xml

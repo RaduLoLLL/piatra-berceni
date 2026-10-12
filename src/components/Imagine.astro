@@ -1,0 +1,47 @@
+---
+// Afișează prima fotografie (optimizată automat în AVIF/WebP, la mai multe mărimi),
+// sau desenul de rezervă al modelului dacă nu există încă fotografii.
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { Forma } from '../lib/constante';
+import { srcModel } from '../lib/vizual';
+import { INALTIME, LATIME } from '../lib/modele';
+
+interface Props {
+	foto?: ImageMetadata;
+	model: { forma: Forma; culori: string[] };
+	alt: string;
+	/** Mărimea afișată, pentru alegerea variantei potrivite (atributul sizes). */
+	sizes: string;
+	/** true pentru imaginea principală a paginii: se încarcă imediat, nu la derulare. */
+	prioritar?: boolean;
+	class?: string;
+}
+const { foto, model, alt, sizes, prioritar = false, class: clasa } = Astro.props;
+const latimi = foto ? [360, 560, 800, 1200].filter((w) => w < foto.width).concat(Math.min(foto.width, 1600)) : [];
+---
+
+{
+	foto ? (
+		<Picture
+			src={foto}
+			alt={alt}
+			formats={['avif', 'webp']}
+			widths={latimi}
+			sizes={sizes}
+			loading={prioritar ? 'eager' : 'lazy'}
+			fetchpriority={prioritar ? 'high' : 'auto'}
+			class={clasa}
+		/>
+	) : (
+		<img
+			src={srcModel(model)}
+			alt={alt}
+			width={LATIME}
+			height={INALTIME}
+			loading={prioritar ? 'eager' : 'lazy'}
+			decoding="async"
+			class={clasa}
+		/>
+	)
+}

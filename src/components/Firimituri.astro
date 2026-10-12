@@ -1,0 +1,37 @@
+---
+interface Props {
+	pasi: { nume: string; url: string }[];
+}
+const { pasi } = Astro.props;
+---
+
+<nav class="firimituri" aria-label="Unde te afli">
+	<ol>
+		{
+			pasi.map((p, i) => (
+				<li>{i < pasi.length - 1 ? <a href={p.url}>{p.nume}</a> : <span aria-current="page">{p.nume}</span>}</li>
+			))
+		}
+	</ol>
+</nav>
+
+<style>
+	.firimituri ol {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+		margin: 0 0 16px;
+		padding: 0;
+		list-style: none;
+		font-size: 0.875rem;
+		color: var(--text-2);
+	}
+	li + li::before {
+		content: '/';
+		margin-right: 4px;
+		color: var(--linie);
+	}
+	a {
+		color: var(--text-2);
+	}
+</style>

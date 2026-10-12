@@ -1,0 +1,21 @@
+---
+import Baza from '../layouts/Baza.astro';
+import { categorii } from '../lib/date';
+---
+
+<Baza titlu="Pagina nu a fost găsită" descriere="Pagina căutată nu există." faraIndexare>
+	<div class="container sectiune">
+		<h1>Pagina nu a fost găsită</h1>
+		<p class="lead">Este posibil ca produsul să fi fost mutat sau scos din catalog. Încearcă una dintre categoriile de mai jos.</p>
+		<ul>
+			{
+				categorii.map((c) => (
+					<li>
+						<a href={`/produse/${c.slug}/`}>{c.nume}</a>
+					</li>
+				))
+			}
+			<li><a href="/contact/">Contact</a></li>
+		</ul>
+	</div>
+</Baza>

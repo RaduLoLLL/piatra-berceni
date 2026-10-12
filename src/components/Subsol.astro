@@ -1,0 +1,114 @@
+---
+import Logo from './Logo.astro';
+import { categorii, firma } from '../lib/date';
+const an = new Date().getFullYear();
+---
+
+<footer class="subsol">
+	<div class="container subsol__grila">
+		<div>
+			<Logo deschis />
+			<p class="subsol__slogan">{firma.slogan}</p>
+		</div>
+		<div>
+			<h2>Contact</h2>
+			<address>
+				{firma.adresa}<br />
+				{firma.localitate}, jud. {firma.judet}<br />
+				<a href={`tel:${firma.telefon_link}`}>{firma.telefon}</a><br />
+				<a href={`mailto:${firma.email}`}>{firma.email}</a>
+			</address>
+		</div>
+		<div>
+			<h2>Program</h2>
+			<dl class="subsol__program">
+				{
+					firma.program.map((p) => (
+						<>
+							<dt>{p.zile}</dt>
+							<dd>{p.ore}</dd>
+						</>
+					))
+				}
+			</dl>
+		</div>
+		<div>
+			<h2>Produse</h2>
+			<ul>
+				{
+					categorii.map((c) => (
+						<li>
+							<a href={`/produse/${c.slug}/`}>{c.nume}</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</div>
+	<div class="container subsol__jos">
+		<span>© {an} {firma.nume}{firma.cui && ` · CUI ${firma.cui}`}{firma.reg_com && ` · ${firma.reg_com}`}</span>
+		<span>
+			<a href="https://anpc.ro/" rel="noopener">ANPC</a>
+			{firma.facebook && <> · <a href={firma.facebook} rel="noopener">Facebook</a></>}
+		</span>
+	</div>
+</footer>
+
+<style>
+	.subsol {
+		background: var(--piatra);
+		color: var(--piatra-text-2);
+		padding-top: 48px;
+		font-size: 0.9375rem;
+	}
+	.subsol a {
+		color: var(--piatra-text);
+	}
+	.subsol h2 {
+		color: var(--piatra-text);
+		font-size: 0.875rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		margin-bottom: 12px;
+	}
+	.subsol__grila {
+		display: grid;
+		gap: 32px;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		padding-bottom: 40px;
+	}
+	.subsol__slogan {
+		margin-top: 12px;
+		max-width: 32ch;
+	}
+	address {
+		font-style: normal;
+	}
+	ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	li + li {
+		margin-top: 4px;
+	}
+	.subsol__program {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 4px 16px;
+		margin: 0;
+	}
+	.subsol__program dd {
+		margin: 0;
+		color: var(--piatra-text);
+	}
+	.subsol__jos {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 8px 24px;
+		padding-block: 20px;
+		border-top: 1px solid rgb(255 255 255 / 0.1);
+		font-size: 0.8125rem;
+	}
+</style>

@@ -1,0 +1,15 @@
+# Reguli de cache pentru Cloudflare Pages.
+# Fișierele din /_astro/ au numele schimbat la fiecare modificare, deci pot sta în cache un an.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/modele/*
+  Cache-Control: public, max-age=604800
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+
+/admin/*
+  X-Robots-Tag: noindex

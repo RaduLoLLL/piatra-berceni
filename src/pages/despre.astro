@@ -1,0 +1,29 @@
+---
+import { getEntry, render } from 'astro:content';
+import Baza from '../layouts/Baza.astro';
+import Firimituri from '../components/Firimituri.astro';
+import Icon from '../components/Icon.astro';
+import { urlOferta } from '../lib/date';
+import { schemaFirimituri } from '../lib/schema';
+
+const pagina = await getEntry('pagini', 'despre');
+if (!pagina) throw new Error('Lipsește src/content/pagini/despre.md');
+const { Content } = await render(pagina);
+const pasi = [
+	{ nume: 'Acasă', url: '/' },
+	{ nume: pagina.data.titlu, url: '/despre/' },
+];
+---
+
+<Baza titlu={pagina.data.titlu} descriere={pagina.data.descriere} schema={[schemaFirimituri(Astro.site!, pasi)]}>
+	<div class="container sectiune">
+		<Firimituri pasi={pasi} />
+		<h1>{pagina.data.titlu}</h1>
+		<div class="continut-text">
+			<Content />
+		</div>
+		<p>
+			<a class="buton" href={urlOferta()}><Icon nume="oferta" /> Cere ofertă</a>
+		</p>
+	</div>
+</Baza>

@@ -1,0 +1,42 @@
+---
+import Baza from '../layouts/Baza.astro';
+import Icon from '../components/Icon.astro';
+import { firma } from '../lib/date';
+---
+
+<Baza titlu="Mulțumim" descriere="Am primit cererea ta de ofertă." faraIndexare>
+	<div class="container sectiune mesaj">
+		<Icon nume="bifa" class="mesaj__icon" />
+		<h1>Am primit cererea ta</h1>
+		<p class="lead">Te contactăm în cel mai scurt timp. Dacă e urgent, sună-ne direct.</p>
+		<p class="mesaj__butoane">
+			<a class="buton" href={`tel:${firma.telefon_link}`}><Icon nume="telefon" /> {firma.telefon}</a>
+			<a class="buton buton--contur" href="/produse/">Înapoi la produse</a>
+		</p>
+	</div>
+</Baza>
+
+<style>
+	.mesaj {
+		text-align: center;
+	}
+	.mesaj .lead {
+		margin-inline: auto;
+	}
+	.mesaj :global(.mesaj__icon) {
+		width: 64px;
+		height: 64px;
+		margin: 0 auto 16px;
+		padding: 14px;
+		border-radius: 50%;
+		background: var(--verde);
+		color: #fff;
+	}
+	.mesaj__butoane {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 12px;
+		margin-top: 24px;
+	}
+</style>

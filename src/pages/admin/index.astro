@@ -1,0 +1,34 @@
+---
+// Panoul de administrare (Decap CMS). Configurarea este în public/admin/config.yml.
+// Se încarcă doar pe această pagină, deci nu încetinește restul site-ului.
+---
+
+<!doctype html>
+<html lang="ro">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex" />
+		<title>Administrare | Piatra Berceni</title>
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<!-- Cale absolută, ca panoul să-și găsească setările și la /admin, fără / la final. -->
+		<link href="/admin/config.yml" type="text/yaml" rel="cms-config-url" />
+	</head>
+	<body>
+		<script is:inline>
+			window.CMS_MANUAL_INIT = true;
+		</script>
+		<script is:inline src="https://unpkg.com/decap-cms@3.16.3/dist/decap-cms.js"></script>
+		<script is:inline>
+			// Autentificarea GitHub (functions/api/auth.js) rulează pe același domeniu ca panoul,
+			// așa că panoul merge la fel pe *.pages.dev, pe domeniul final sau pe www.
+			window.initCMS({
+				config: {
+					backend: { base_url: location.origin },
+					site_url: location.origin,
+					display_url: location.origin,
+				},
+			});
+		</script>
+	</body>
+</html>

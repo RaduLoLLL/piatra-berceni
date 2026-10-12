@@ -1,0 +1,80 @@
+---
+import '../styles/global.css';
+import Antet from '../components/Antet.astro';
+import Subsol from '../components/Subsol.astro';
+import BaraMobil from '../components/BaraMobil.astro';
+import { firma } from '../lib/date';
+
+interface Props {
+	titlu: string;
+	descriere: string;
+	/** Date structurate (schema.org) pentru Google. */
+	schema?: Record<string, unknown>[];
+	imagine?: string;
+	faraIndexare?: boolean;
+}
+
+const { titlu, descriere, schema = [], imagine, faraIndexare = false } = Astro.props;
+const titluComplet = titlu === firma.nume_scurt ? titlu : `${titlu} | ${firma.nume_scurt}`;
+const canonic = new URL(Astro.url.pathname, Astro.site);
+const imagineOg = imagine ? new URL(imagine, Astro.site).href : undefined;
+
+// Paginile se pre-încarcă în fundal când vizitatorul ține cursorul pe un link (Chrome/Edge),
+// așa că deschiderea lor pare instantanee. Fără JavaScript adăugat.
+const reguliPreincarcare = {
+	prerender: [
+		{
+			where: { and: [{ href_matches: '/*' }, { not: { href_matches: '/fise/*' } }, { not: { href_matches: '/admin/*' } }] },
+			eagerness: 'moderate',
+		},
+	],
+};
+---
+
+<!doctype html>
+<html lang="ro">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{titluComplet}</title>
+		<meta name="description" content={descriere} />
+		<link rel="canonical" href={canonic} />
+		{faraIndexare && <meta name="robots" content="noindex" />}
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<meta name="theme-color" content="#2a2825" />
+		<meta property="og:type" content="website" />
+		<meta property="og:locale" content="ro_RO" />
+		<meta property="og:site_name" content={firma.nume_scurt} />
+		<meta property="og:title" content={titluComplet} />
+		<meta property="og:description" content={descriere} />
+		<meta property="og:url" content={canonic} />
+		{imagineOg && <meta property="og:image" content={imagineOg} />}
+		<link rel="sitemap" href="/sitemap-index.xml" />
+		<script type="speculationrules" set:html={JSON.stringify(reguliPreincarcare)} />
+		{schema.map((s) => <script type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', ...s })} />)}
+	</head>
+	<body>
+		<a class="sari sr-only" href="#continut">Sari la conținut</a>
+		<Antet />
+		<main id="continut">
+			<slot />
+		</main>
+		<Subsol />
+		<BaraMobil />
+	</body>
+</html>
+
+<style>
+	.sari:focus {
+		position: fixed;
+		top: 8px;
+		left: 8px;
+		z-index: 100;
+		width: auto;
+		height: auto;
+		padding: 8px 16px;
+		clip: auto;
+		background: var(--suprafata);
+		color: var(--text);
+	}
+</style>

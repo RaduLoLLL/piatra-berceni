@@ -1,0 +1,228 @@
+---
+import Baza from '../layouts/Baza.astro';
+import CardCategorie from '../components/CardCategorie.astro';
+import CardProdus from '../components/CardProdus.astro';
+import CardLucrare from '../components/CardLucrare.astro';
+import Icon from '../components/Icon.astro';
+import { acasa, categorii, firma, getLucrari, getProduse, linkWhatsapp, urlOferta } from '../lib/date';
+import { schemaFirma } from '../lib/schema';
+import { URL_FUNDAL } from '../lib/vizual';
+
+const produse = await getProduse();
+const recomandate = produse.filter((p) => p.data.recomandat).slice(0, 4);
+const lucrari = (await getLucrari()).slice(0, 3);
+const whatsapp = linkWhatsapp('Bună ziua, aș dori o ofertă pentru ');
+---
+
+<Baza
+	titlu={firma.nume_scurt}
+	descriere={`${firma.slogan}. Cere ofertă online sau sună-ne: ${firma.telefon}.`}
+	schema={[schemaFirma(Astro.site!)]}
+>
+	<section class="erou" style={`--model: url(${URL_FUNDAL})`}>
+		<div class="container erou__continut">
+			<span class="supratitlu">{firma.localitate}, {firma.judet}</span>
+			<h1>{acasa.titlu}</h1>
+			<p class="erou__subtitlu">{acasa.subtitlu}</p>
+			<div class="erou__butoane">
+				<a class="buton" href="/produse/">Vezi produsele <Icon nume="sageata" /></a>
+				<a class="buton buton--contur erou__suna" href={`tel:${firma.telefon_link}`}>
+					<Icon nume="telefon" />
+					{firma.telefon}
+				</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="sectiune">
+		<div class="container">
+			<div class="titlu-sectiune">
+				<h2>Ce găsești la noi</h2>
+				<a href="/produse/">Tot catalogul</a>
+			</div>
+			<div class="grila">
+				{categorii.map((c) => <CardCategorie categorie={c} produse={produse} />)}
+			</div>
+		</div>
+	</section>
+
+	{
+		recomandate.length > 0 && (
+			<section class="sectiune sectiune--alt">
+				<div class="container">
+					<div class="titlu-sectiune">
+						<h2>Cele mai căutate</h2>
+					</div>
+					<div class="grila">
+						{recomandate.map((p) => (
+							<CardProdus produs={p} />
+						))}
+					</div>
+				</div>
+			</section>
+		)
+	}
+
+	{
+		acasa.avantaje.length > 0 && (
+			<section class="sectiune">
+				<div class="container">
+					<h2>De ce să cumperi de la noi</h2>
+					<ul class="avantaje">
+						{acasa.avantaje.map((a) => (
+							<li>
+								<Icon nume="bifa" />
+								<div>
+									<h3>{a.titlu}</h3>
+									<p class="text-secundar">{a.text}</p>
+								</div>
+							</li>
+						))}
+					</ul>
+				</div>
+			</section>
+		)
+	}
+
+	{
+		lucrari.length > 0 && (
+			<section class="sectiune sectiune--alt">
+				<div class="container">
+					<div class="titlu-sectiune">
+						<h2>Lucrări realizate</h2>
+						<a href="/lucrari/">Toate lucrările</a>
+					</div>
+					<div class="grila">
+						{lucrari.map((l) => (
+							<CardLucrare lucrare={l} />
+						))}
+					</div>
+				</div>
+			</section>
+		)
+	}
+
+	<section class="sectiune apel">
+		<div class="container apel__continut">
+			<div>
+				<h2>Ai nevoie de o ofertă?</h2>
+				<p>Spune-ne ce suprafață ai și ce model îți place. Îți răspundem cu prețul și cantitățile necesare.</p>
+			</div>
+			<div class="apel__butoane">
+				<a class="buton" href={urlOferta()}><Icon nume="oferta" /> Cere ofertă</a>
+				{
+					whatsapp && (
+						<a class="buton buton--verde" href={whatsapp} rel="noopener">
+							<Icon nume="chat" /> WhatsApp
+						</a>
+					)
+				}
+			</div>
+		</div>
+	</section>
+</Baza>
+
+<style>
+	.erou {
+		position: relative;
+		background: var(--piatra);
+		color: var(--piatra-text);
+		overflow: hidden;
+	}
+	/* Fundalul cu model de pavaj, estompat spre stânga ca textul să rămână lizibil. */
+	.erou::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: var(--model) right center / cover no-repeat;
+		opacity: 0.55;
+		mask-image: linear-gradient(100deg, transparent 25%, #000 85%);
+	}
+	.erou__continut {
+		position: relative;
+		padding-block: clamp(48px, 9vw, 112px);
+	}
+	.erou h1 {
+		max-width: 16ch;
+	}
+	.erou .supratitlu {
+		color: #e48a6f;
+	}
+	.erou__subtitlu {
+		max-width: 46ch;
+		font-size: 1.1875rem;
+		color: var(--piatra-text-2);
+	}
+	.erou__butoane {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+		margin-top: 28px;
+	}
+	.erou .buton--contur {
+		color: var(--piatra-text);
+	}
+	.erou .buton--contur:hover {
+		background: var(--piatra-text);
+		border-color: var(--piatra-text);
+		color: var(--piatra);
+	}
+
+	.avantaje {
+		display: grid;
+		gap: 24px 32px;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+		margin: 24px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+	.avantaje li {
+		display: flex;
+		gap: 12px;
+	}
+	.avantaje li > :global(svg) {
+		flex: none;
+		width: 28px;
+		height: 28px;
+		padding: 4px;
+		border-radius: 50%;
+		background: var(--accent);
+		color: var(--accent-text);
+	}
+	.avantaje h3 {
+		margin-bottom: 4px;
+	}
+	.avantaje p {
+		margin: 0;
+		font-size: 0.9375rem;
+	}
+
+	.apel {
+		background: var(--accent);
+		color: var(--accent-text);
+	}
+	.apel__continut {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 24px;
+	}
+	.apel p {
+		margin: 0;
+		max-width: 52ch;
+		opacity: 0.9;
+	}
+	.apel__butoane {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+	.apel .buton:not(.buton--verde) {
+		background: var(--suprafata);
+		color: var(--accent);
+	}
+	.apel .buton:not(.buton--verde):hover {
+		background: var(--fundal);
+	}
+</style>
