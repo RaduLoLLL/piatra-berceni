@@ -87,6 +87,8 @@ Configurare (o singură dată):
 
 Fără domeniu propriu verificat în Resend, emailurile pot fi trimise doar către adresa contului Resend (bun pentru test).
 
+**Starea actuală:** aplicația GitHub *Piatra Berceni CMS* (App ID 5299314) e instalată doar pe `piatra-berceni`; `EMAIL_DE_LA` este expeditorul de test Resend (`onboarding@resend.dev`), iar `ADMIN_EMAILURI` conține doar adresa dezvoltatorului. După cumpărarea domeniului: verifică domeniul în Resend, schimbă `EMAIL_DE_LA` (ex. `Piatra Berceni <site@domeniu.ro>`) și adaugă adresa clientului în `ADMIN_EMAILURI`.
+
 **2. Dezvoltatorul: GitHub**
 
 În fereastra de logare: „Dezvoltator? Intră cu GitHub”. Folosește aplicația OAuth **Piatra Berceni CMS** (callback `https://piatra-berceni.pages.dev/api/callback`) și variabilele `GITHUB_CLIENT_ID` (text), `GITHUB_CLIENT_SECRET` (secret).
