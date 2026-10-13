@@ -1,6 +1,6 @@
 ---
 nume: Pavele cubice 6 cm
-categorie: pavele
+categorie: Pavele
 publicat: true
 recomandat: false
 ordine: 40

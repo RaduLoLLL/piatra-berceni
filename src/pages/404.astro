@@ -1,6 +1,7 @@
 ---
 import Baza from '../layouts/Baza.astro';
-import { categorii } from '../lib/date';
+import { getCategorii, urlCategorie } from '../lib/date';
+const categorii = await getCategorii();
 ---
 
 <Baza titlu="Pagina nu a fost găsită" descriere="Pagina căutată nu există." faraIndexare>
@@ -11,7 +12,7 @@ import { categorii } from '../lib/date';
 			{
 				categorii.map((c) => (
 					<li>
-						<a href={`/produse/${c.slug}/`}>{c.nume}</a>
+						<a href={urlCategorie(c.slug)}>{c.nume}</a>
 					</li>
 				))
 			}

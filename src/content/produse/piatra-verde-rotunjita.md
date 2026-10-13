@@ -1,6 +1,6 @@
 ---
 nume: Piatră verde rotunjită
-categorie: piatra-decorativa
+categorie: Piatră decorativă
 publicat: true
 recomandat: false
 ordine: 20

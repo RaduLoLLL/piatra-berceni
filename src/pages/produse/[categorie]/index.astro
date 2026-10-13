@@ -1,184 +1,35 @@
 ---
 import Baza from '../../../layouts/Baza.astro';
-import Firimituri from '../../../components/Firimituri.astro';
-import CardProdus from '../../../components/CardProdus.astro';
-import { categorii, getProduse, urlCategorie, urlOferta, type Categorie } from '../../../lib/date';
-import { NUME_CULORI } from '../../../lib/constante';
+import Catalog from '../../../components/Catalog.astro';
+import { getCategorii, getProduse, slugCategorie, urlCategorie, type Categorie } from '../../../lib/date';
 import { schemaFirimituri } from '../../../lib/schema';
 
 export async function getStaticPaths() {
+	const categorii = await getCategorii();
 	return categorii.map((c) => ({ params: { categorie: c.slug }, props: { categorie: c } }));
 }
 
 const { categorie } = Astro.props as { categorie: Categorie };
-const produse = (await getProduse()).filter((p) => p.data.categorie === categorie.slug);
-
-// Filtrele apar doar dacă au sens (cel puțin două opțiuni diferite).
-const culori = [...new Set(produse.flatMap((p) => p.data.culori))];
-const grosimi = [...new Set(produse.map((p) => p.data.grosime_cm).filter((g): g is number => !!g))].sort((a, b) => a - b);
-const areFiltre = produse.length > 2 && (culori.length > 1 || grosimi.length > 1);
+const toate = await getProduse();
+const categorii = await getCategorii();
+const produse = toate.filter((p) => slugCategorie(p) === categorie.slug);
 
 const pasi = [
 	{ nume: 'Acasă', url: '/' },
 	{ nume: 'Produse', url: '/produse/' },
 	{ nume: categorie.nume, url: urlCategorie(categorie.slug) },
 ];
+const descriere = categorie.descriere || `Modelele de ${categorie.nume.toLowerCase()} disponibile la noi, cu dimensiuni și culori.`;
 ---
 
-<Baza
-	titlu={`${categorie.nume} – Berceni, Ilfov`}
-	descriere={`${categorie.descriere} Vezi modelele, dimensiunile și culorile disponibile.`}
-	schema={[schemaFirimituri(Astro.site!, pasi)]}
->
-	<div class="container sectiune">
-		<Firimituri pasi={pasi} />
-		<h1>{categorie.nume}</h1>
-		<p class="lead">{categorie.descriere}</p>
-
-		{
-			areFiltre && (
-				<form class="filtre" id="filtre" aria-label="Filtrează produsele">
-					{grosimi.length > 1 && (
-						<fieldset>
-							<legend>Grosime</legend>
-							{grosimi.map((g) => (
-								<label>
-									<input type="checkbox" name="grosime" value={g} />
-									<span>{g} cm</span>
-								</label>
-							))}
-						</fieldset>
-					)}
-					{culori.length > 1 && (
-						<fieldset>
-							<legend>Culoare</legend>
-							{culori.map((c) => (
-								<label>
-									<input type="checkbox" name="culoare" value={c} />
-									<span>{NUME_CULORI[c] ?? c}</span>
-								</label>
-							))}
-						</fieldset>
-					)}
-					<p class="filtre__rezultat" aria-live="polite" />
-				</form>
-			)
-		}
-
-		{
-			produse.length > 0 ? (
-				<div class="grila" id="produse">
-					{produse.map((p) => (
-						<CardProdus produs={p} />
-					))}
-				</div>
-			) : (
-				<p>
-					Momentan nu avem produse listate în această categorie. <a href={urlOferta()}>Întreabă-ne</a> ce avem în stoc.
-				</p>
-			)
-		}
-		<p class="nu-gasesti" hidden id="nimic">Niciun produs nu se potrivește filtrelor alese.</p>
-	</div>
+<Baza titlu={`${categorie.nume} – Berceni, Ilfov`} descriere={`${descriere} Cere ofertă online.`} schema={[schemaFirimituri(Astro.site!, pasi)]}>
+	<Catalog
+		titlu={categorie.nume}
+		descriere={descriere}
+		produse={produse}
+		toateProdusele={toate}
+		categorii={categorii}
+		activ={categorie.slug}
+		pasi={pasi}
+	/>
 </Baza>
-
-{
-	areFiltre && (
-		<script is:inline>
-			(function () {
-				var form = document.getElementById('filtre');
-				var carduri = document.querySelectorAll('#produse > .card');
-				var nimic = document.getElementById('nimic');
-				var rezultat = form.querySelector('.filtre__rezultat');
-				function bifate(nume) {
-					return Array.prototype.map.call(form.querySelectorAll('input[name="' + nume + '"]:checked'), function (i) {
-						return i.value;
-					});
-				}
-				function aplica() {
-					var g = bifate('grosime');
-					var c = bifate('culoare');
-					var vizibile = 0;
-					carduri.forEach(function (card) {
-						var culoriCard = card.dataset.culori.split('|');
-						var ok =
-							(!g.length || g.indexOf(card.dataset.grosime) > -1) &&
-							(!c.length || c.some(function (x) { return culoriCard.indexOf(x) > -1; }));
-						card.hidden = !ok;
-						if (ok) vizibile++;
-					});
-					nimic.hidden = vizibile > 0;
-					rezultat.textContent = g.length || c.length ? vizibile + ' din ' + carduri.length + ' produse' : '';
-				}
-				form.addEventListener('change', aplica);
-			})();
-		</script>
-	)
-}
-
-<style>
-	.filtre {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 12px 32px;
-		margin: 24px 0;
-		padding: 16px 20px;
-		background: var(--suprafata);
-		border: 1px solid var(--linie);
-		border-radius: var(--raza);
-	}
-	fieldset {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 8px;
-		margin: 0;
-		padding: 0;
-		border: 0;
-	}
-	legend {
-		float: left;
-		margin-right: 4px;
-		font-weight: 700;
-		font-size: 0.9375rem;
-	}
-	label {
-		position: relative;
-		cursor: pointer;
-	}
-	label input {
-		position: absolute;
-		opacity: 0;
-	}
-	label span {
-		display: inline-block;
-		padding: 6px 14px;
-		border: 1px solid var(--linie);
-		border-radius: 999px;
-		font-size: 0.9375rem;
-		font-weight: 600;
-	}
-	label input:checked + span {
-		background: var(--text);
-		border-color: var(--text);
-		color: var(--fundal);
-	}
-	label input:focus-visible + span {
-		outline: 3px solid var(--accent);
-		outline-offset: 2px;
-	}
-	.filtre__rezultat {
-		margin: 0 0 0 auto;
-		color: var(--text-2);
-		font-size: 0.875rem;
-	}
-	.filtre__rezultat:empty {
-		display: none;
-	}
-	.nu-gasesti {
-		padding: 24px;
-		text-align: center;
-		color: var(--text-2);
-	}
-</style>

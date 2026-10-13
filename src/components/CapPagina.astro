@@ -1,0 +1,36 @@
+---
+// Antetul paginilor interioare: unde te afli, titlul mare și o propoziție de introducere.
+import Firimituri from './Firimituri.astro';
+
+interface Props {
+	titlu: string;
+	lead?: string;
+	pasi: { nume: string; url: string }[];
+}
+const { titlu, lead, pasi } = Astro.props;
+---
+
+<div class="cap">
+	<div class="container">
+		<Firimituri pasi={pasi} />
+		<slot name="inainte" />
+		<h1>{titlu}</h1>
+		{lead && <p class="lead">{lead}</p>}
+		<slot />
+	</div>
+</div>
+
+<style>
+	.cap {
+		padding-block: clamp(28px, 4vw, 48px) clamp(28px, 3.5vw, 44px);
+		background: var(--suprafata);
+		border-bottom: 1px solid var(--linie);
+	}
+	h1 {
+		margin-bottom: 0.2em;
+		font-size: clamp(2.25rem, 1.6rem + 2.6vw, 4rem);
+	}
+	.lead {
+		margin: 0;
+	}
+</style>

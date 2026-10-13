@@ -1,6 +1,6 @@
 ---
 nume: Pavele dreptunghiulare 6 cm
-categorie: pavele
+categorie: Pavele
 publicat: true
 recomandat: true
 ordine: 10

@@ -1,6 +1,6 @@
 ---
 nume: Pași japonezi din piatră naturală
-categorie: pasi-japonezi
+categorie: Pași japonezi
 publicat: true
 recomandat: true
 ordine: 10

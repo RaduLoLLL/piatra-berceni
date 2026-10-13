@@ -5,61 +5,79 @@ import { modelLucrare } from '../lib/vizual';
 
 interface Props {
 	lucrare: Lucrare;
+	mare?: boolean;
 }
-const { lucrare } = Astro.props;
+const { lucrare, mare = false } = Astro.props;
 const d = lucrare.data;
 const luna = new Intl.DateTimeFormat('ro-RO', { month: 'long', year: 'numeric' }).format(d.data);
 ---
 
-<article class="lucrare">
+<a class:list={['lucrare', { 'lucrare--mare': mare }]} href={`/lucrari/${lucrare.id}/`}>
 	<Imagine
 		foto={d.imagini[0]}
 		model={modelLucrare(lucrare)}
 		alt={d.imagini[0] ? d.titlu : ''}
-		sizes="(min-width: 1240px) 380px, (min-width: 600px) 45vw, 100vw"
+		sizes={mare ? '(min-width: 900px) 60vw, 100vw' : '(min-width: 900px) 40vw, 100vw'}
 		class="lucrare__imagine"
 	/>
-	<div class="lucrare__corp">
+	<div class="lucrare__text">
 		{d.exemplu && <span class="eticheta-exemplu">Exemplu</span>}
-		<h3><a href={`/lucrari/${lucrare.id}/`}>{d.titlu}</a></h3>
-		<p class="text-secundar">
-			{d.localitate} · {luna}{d.suprafata_mp && ` · ${d.suprafata_mp} m²`}
-		</p>
+		<span class="lucrare__loc">{d.localitate} · {luna}{d.suprafata_mp && ` · ${d.suprafata_mp} m²`}</span>
+		<h3>{d.titlu}</h3>
 	</div>
-</article>
+</a>
 
 <style>
 	.lucrare {
 		position: relative;
-		background: var(--suprafata);
-		border: 1px solid var(--linie);
-		border-radius: var(--raza);
+		display: block;
 		overflow: hidden;
+		text-decoration: none;
+		min-height: 320px;
+		background: var(--piatra);
+		color: #fff;
 	}
 	.lucrare :global(.lucrare__imagine) {
+		position: absolute;
+		inset: 0;
 		width: 100%;
-		aspect-ratio: 3 / 2;
+		height: 100%;
 		object-fit: cover;
+		transition: transform 0.6s ease;
 	}
-	.lucrare__corp {
-		padding: 16px 18px 6px;
-	}
-	h3 {
-		margin-top: 6px;
-	}
-	h3 a {
-		color: var(--text);
-		text-decoration: none;
-	}
-	h3 a::after {
+	.lucrare::after {
 		content: '';
 		position: absolute;
 		inset: 0;
+		background: linear-gradient(180deg, rgb(0 0 0 / 0) 30%, rgb(0 0 0 / 0.75) 100%);
 	}
-	.lucrare:hover h3 a {
-		color: var(--accent);
+	.lucrare:hover :global(.lucrare__imagine) {
+		transform: scale(1.04);
 	}
-	p {
-		font-size: 0.9375rem;
+	.lucrare__text {
+		position: absolute;
+		inset: auto 0 0 0;
+		z-index: 1;
+		padding: clamp(18px, 2.5vw, 32px);
+	}
+	.lucrare__loc {
+		display: block;
+		margin: 8px 0 6px;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		opacity: 0.85;
+	}
+	h3 {
+		margin: 0;
+		font-size: clamp(1.375rem, 1.1rem + 1vw, 2rem);
+		max-width: 22ch;
+	}
+	.lucrare--mare h3 {
+		font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.75rem);
+	}
+	.lucrare:hover {
+		color: #fff;
 	}
 </style>

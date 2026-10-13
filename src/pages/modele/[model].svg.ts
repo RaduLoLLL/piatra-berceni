@@ -1,11 +1,12 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { categorii, getLucrari, getProduse } from '../../lib/date';
+import { getCategorii, getLucrari, getProduse } from '../../lib/date';
 import { parseSlugModel, slugModel, svgModel } from '../../lib/modele';
 import { MODEL_FUNDAL, modelCategorie, modelLucrare, modelProdus } from '../../lib/vizual';
 
 export const getStaticPaths = (async () => {
 	const produse = await getProduse();
 	const lucrari = await getLucrari();
+	const categorii = await getCategorii();
 	const modele = [
 		...produse.map(modelProdus),
 		...categorii.map((c) => modelCategorie(c, produse)),

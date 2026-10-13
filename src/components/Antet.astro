@@ -1,129 +1,303 @@
 ---
 import Logo from './Logo.astro';
 import Icon from './Icon.astro';
-import { firma, urlOferta } from '../lib/date';
+import { firma, getCategorii, linkWhatsapp, urlCategorie, urlOferta } from '../lib/date';
 
+const categorii = await getCategorii();
 const legaturi = [
-	{ href: '/produse/', text: 'Produse' },
 	{ href: '/lucrari/', text: 'Lucrări' },
 	{ href: '/servicii/', text: 'Servicii' },
-	{ href: '/despre/', text: 'Despre' },
+	{ href: '/despre/', text: 'Despre noi' },
 	{ href: '/contact/', text: 'Contact' },
 ];
 const cale = Astro.url.pathname;
-const activ = (href: string) => cale === href || cale.startsWith(href);
+const activ = (href: string) => cale.startsWith(href.replace(/\/$/, ''));
+const program = firma.program.filter((p) => !/închis/i.test(p.ore)).map((p) => `${p.zile}: ${p.ore}`).join(' · ');
+const whatsapp = linkWhatsapp('Bună ziua, ');
 ---
+
+<div class="bara-sus">
+	<div class="container bara-sus__rand">
+		<span><Icon nume="ceas" />{program}</span>
+		<span class="bara-sus__contact">
+			<a href={`tel:${firma.telefon_link}`}><Icon nume="telefon" />{firma.telefon}</a>
+			<a href={`mailto:${firma.email}`}><Icon nume="mail" />{firma.email}</a>
+			{whatsapp && <a href={whatsapp} rel="noopener"><Icon nume="chat" />WhatsApp</a>}
+		</span>
+	</div>
+</div>
 
 <header class="antet">
 	<div class="container antet__rand">
 		<Logo />
-		<nav class="antet__nav" aria-label="Meniu principal">
-			<ul>
-				{
-					legaturi.map((l) => (
-						<li>
-							<a href={l.href} aria-current={activ(l.href) ? 'page' : undefined}>
-								{l.text}
-							</a>
-						</li>
-					))
-				}
-			</ul>
-		</nav>
+		<form class="cautare" action="/cautare/" role="search">
+			<label class="sr-only" for="cautare-antet">Caută produse</label>
+			<input id="cautare-antet" type="search" name="q" placeholder="Caută: pavele, borduri, piatră decorativă…" autocomplete="off" />
+			<button type="submit" aria-label="Caută"><Icon nume="cauta" /></button>
+		</form>
+		<a class="antet__cauta-mobil" href="/cautare/" aria-label="Caută produse"><Icon nume="cauta" /></a>
 		<div class="antet__actiuni">
 			<a class="antet__telefon" href={`tel:${firma.telefon_link}`}>
-				<Icon nume="telefon" />
+				<small>Sună-ne</small>
 				{firma.telefon}
 			</a>
 			<a class="buton" href={urlOferta()}>Cere ofertă</a>
 		</div>
 	</div>
+	<nav class="meniu" aria-label="Meniu principal">
+		<ul class="container">
+			<li class="meniu__produse">
+				<a href="/produse/" aria-current={activ('/produse/') ? 'page' : undefined}>Produse <Icon nume="jos" /></a>
+				<div class="meniu__panou">
+					<ul>
+						{
+							categorii.map((c) => (
+								<li>
+									<a href={urlCategorie(c.slug)}>{c.nume}</a>
+								</li>
+							))
+						}
+					</ul>
+					<a class="link-sageata" href="/produse/">Toate produsele</a>
+				</div>
+			</li>
+			{
+				legaturi.map((l) => (
+					<li>
+						<a href={l.href} aria-current={activ(l.href) ? 'page' : undefined}>
+							{l.text}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
 </header>
 
 <style>
+	.bara-sus {
+		display: none;
+		background: var(--piatra);
+		color: var(--piatra-text-2);
+		font-size: 0.8125rem;
+	}
+	.bara-sus__rand,
+	.bara-sus__contact,
+	.bara-sus span,
+	.bara-sus a {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.bara-sus__rand {
+		justify-content: space-between;
+		min-height: 38px;
+	}
+	.bara-sus__contact {
+		gap: 24px;
+	}
+	.bara-sus a {
+		color: var(--piatra-text);
+		text-decoration: none;
+	}
+	.bara-sus a:hover {
+		color: #fff;
+	}
+	.bara-sus :global(svg) {
+		width: 14px;
+		height: 14px;
+		opacity: 0.7;
+	}
+
 	.antet {
 		background: var(--suprafata);
 		border-bottom: 1px solid var(--linie);
 	}
 	.antet__rand {
-		display: grid;
-		grid-template-columns: auto 1fr;
+		display: flex;
 		align-items: center;
-		gap: 0 24px;
-		padding-top: 12px;
+		justify-content: space-between;
+		gap: 24px;
+		min-height: 64px;
 	}
-	.antet__nav {
-		grid-column: 1 / -1;
-		/* Pe telefon meniul e mereu vizibil, pe un rând care se poate derula lateral. Fără meniu ascuns. */
-		overflow-x: auto;
-		scrollbar-width: none;
-		margin-inline: calc(var(--margine) * -1);
-		padding-inline: var(--margine);
-	}
-	.antet__nav::-webkit-scrollbar {
+	.cautare,
+	.antet__actiuni {
 		display: none;
 	}
-	.antet__nav ul {
-		display: flex;
-		gap: 2px;
-		margin: 0 0 0 -8px;
-		padding: 0;
-		list-style: none;
-	}
-	.antet__nav a {
-		display: block;
-		padding: 12px 8px;
+	.antet__cauta-mobil {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		margin-right: -10px;
 		color: var(--text);
-		font-size: 1rem;
-		font-weight: 600;
+	}
+	.antet__cauta-mobil :global(svg) {
+		width: 22px;
+	}
+
+	.meniu {
+		border-top: 1px solid var(--linie);
+	}
+	/* Pe telefon meniul e mereu vizibil, pe un rând care se poate derula lateral. Fără meniu ascuns. */
+	.meniu > ul {
+		display: flex;
+		gap: 4px;
+		margin: 0 auto;
+		list-style: none;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+	.meniu > ul::-webkit-scrollbar {
+		display: none;
+	}
+	.meniu a {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		padding: 13px 10px;
+		color: var(--text);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
 		text-decoration: none;
 		white-space: nowrap;
-		border-bottom: 3px solid transparent;
+		border-bottom: 2px solid transparent;
 	}
-	.antet__nav a:hover {
+	.meniu > ul > li:first-child > a {
+		margin-left: -10px;
+	}
+	.meniu a:hover {
 		color: var(--accent);
 	}
-	.antet__nav a[aria-current='page'] {
+	.meniu a[aria-current='page'] {
 		border-bottom-color: var(--accent);
 	}
-	.antet__actiuni {
+	.meniu :global(svg) {
+		width: 16px;
+	}
+	.meniu__panou {
 		display: none;
 	}
 
 	@media (min-width: 960px) {
+		.bara-sus {
+			display: block;
+		}
+		.antet {
+			position: relative;
+			z-index: 20;
+		}
 		.antet__rand {
-			grid-template-columns: auto 1fr auto;
-			padding-top: 0;
+			min-height: 88px;
+			gap: 40px;
 		}
-		.antet__nav {
-			grid-column: auto;
-			margin: 0;
-			padding: 0;
+		.antet__cauta-mobil {
+			display: none;
 		}
-		.antet__nav ul {
-			justify-content: center;
-			margin-left: 0;
+		.cautare {
+			display: flex;
+			flex: 1;
+			max-width: 560px;
+			border: 1px solid var(--linie);
+			border-radius: var(--raza);
+			background: var(--fundal);
+			transition: border-color 0.15s;
 		}
-		.antet__nav a {
-			padding: 26px 10px 23px;
+		.cautare:focus-within {
+			border-color: var(--text);
+			background: var(--suprafata);
+		}
+		.cautare input {
+			flex: 1;
+			min-width: 0;
+			height: 48px;
+			padding: 0 16px;
+			border: 0;
+			background: transparent;
+			font: inherit;
+			font-size: 0.9375rem;
+			color: var(--text);
+			outline: none;
+		}
+		.cautare button {
+			display: grid;
+			place-items: center;
+			width: 52px;
+			border: 0;
+			background: transparent;
+			color: var(--text);
+			cursor: pointer;
+		}
+		.cautare button :global(svg) {
+			width: 20px;
 		}
 		.antet__actiuni {
 			display: flex;
 			align-items: center;
-			gap: 20px;
+			gap: 28px;
 		}
 		.antet__telefon {
-			display: inline-flex;
-			align-items: center;
-			gap: 6px;
+			display: flex;
+			flex-direction: column;
 			color: var(--text);
 			font-weight: 700;
+			line-height: 1.2;
 			text-decoration: none;
 			white-space: nowrap;
 		}
-		.antet__telefon svg {
-			width: 18px;
-			color: var(--accent);
+		.antet__telefon small {
+			color: var(--text-2);
+			font-size: 0.6875rem;
+			font-weight: 700;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+		}
+		.meniu > ul {
+			gap: 20px;
+			overflow: visible;
+		}
+		.meniu a {
+			padding-block: 16px 14px;
+		}
+		.meniu__produse {
+			position: relative;
+		}
+		/* Lista de categorii apare la trecerea cu mouse-ul sau la navigarea cu tastatura. Fără JavaScript. */
+		.meniu__panou {
+			position: absolute;
+			top: 100%;
+			left: -24px;
+			display: block;
+			min-width: 300px;
+			padding: 20px 24px 24px;
+			background: var(--suprafata);
+			border: 1px solid var(--linie);
+			box-shadow: var(--umbra);
+			opacity: 0;
+			visibility: hidden;
+			transform: translateY(6px);
+			transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+		}
+		.meniu__produse:hover .meniu__panou,
+		.meniu__produse:focus-within .meniu__panou {
+			opacity: 1;
+			visibility: visible;
+			transform: none;
+		}
+		.meniu__panou ul {
+			margin: 0 0 16px;
+			padding: 0;
+			list-style: none;
+		}
+		.meniu__panou ul a {
+			padding: 10px 0;
+			border-bottom: 1px solid var(--linie);
+			font-family: var(--titlu);
+			font-size: 1.25rem;
+			font-weight: 600;
+			letter-spacing: 0.02em;
 		}
 	}
 </style>

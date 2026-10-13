@@ -23,10 +23,16 @@ Site static, rapid, pentru Piatra Berceni SRL (pavele, borduri, piatră decorati
 | Pagina „Despre noi” | `src/content/pagini/despre.md` | Pagini |
 | Date firmă, telefon, program | `src/data/firma.json` | Setări site → Date firmă |
 | Texte prima pagină | `src/data/acasa.json` | Setări site → Prima pagină |
-| Categorii | `src/data/categorii.json` | Setări site → Categorii |
+| Categorii (descriere, fotografie, ordine) | `src/data/categorii.json` | Setări site → Categorii, sau direct din formularul produsului |
 | Servicii | `src/data/servicii.json` | Setări site → Servicii |
-| Fotografii | `src/assets/produse/`, `src/assets/lucrari/` | Se încarcă din formularul produsului |
+| Fotografii | `src/assets/produse/`, `src/assets/lucrari/`, `src/assets/categorii/`, `src/assets/acasa/` | Se încarcă din formulare |
 | Fișe tehnice PDF | `public/fise/` | Câmpul „Fișă tehnică” |
+
+### Panoul de administrare: ce e în plus față de Decap
+
+- **Căutare rapidă:** butonul „Caută produs” (jos, dreapta) sau **Ctrl+K**. Caută în toate produsele (inclusiv cele nepublicate) și lucrările, după nume, categorie, dimensiuni, culoare. Nu ține cont de diacritice. Produsele noi apar în căutare după următoarea publicare (~1 minut).
+- **Categorii din formular:** în câmpul „Categorie” al unui produs poți alege „＋ Adaugă o categorie nouă…”. Categoria apare automat pe site, cu pagina ei, în meniu și pe prima pagină. Descrierea, fotografia și ordinea se pot seta din Setări site → Categorii (cu exact același nume).
+- Codul acestor extensii: `public/admin/panou.js`. Datele lor: `src/pages/admin/date.json.ts` (generat la build).
 
 Conținutul este validat la build (`src/content.config.ts`, `src/lib/date.ts`). O greșeală, de exemplu o categorie inexistentă, oprește publicarea în loc să strice site-ul.
 
@@ -73,8 +79,8 @@ Aplicația OAuth există deja: **Piatra Berceni CMS** (GitHub → Settings → D
 
 ## Viteză
 
-- 0 KB JavaScript pe majoritatea paginilor. Doar filtrele din categorii, harta și formularul au câte un mic script inline.
-- CSS-ul este pus direct în pagină; nu se încarcă fonturi externe.
+- 0 KB JavaScript pe majoritatea paginilor. Doar filtrele din catalog, căutarea, harta și formularul au câte un mic script inline.
+- CSS-ul este pus direct în pagină. Fontul titlurilor (Barlow Condensed) e descărcat la build și servit de pe site, fără Google Fonts; textul folosește fontul sistemului.
 - Fotografiile se transformă automat în AVIF/WebP, la 4–5 mărimi, și se încarcă doar când ajung pe ecran.
 - Harta Google se încarcă numai la click.
 - Paginile se pre-încarcă la hover (Speculation Rules), așa că navigarea pare instantanee în Chrome și Edge.

@@ -40,7 +40,7 @@ collections:
     identifier_field: nume
     editor:
       preview: false
-    summary: '{{nume}} · {{categorie}}'
+    summary: "{{nume}} · {{categorie}}{{publicat | ternary('', ' · NEPUBLICAT')}}"
     sortable_fields: [nume, categorie, ordine]
     view_groups:
       - { label: Categorie, field: categorie }
@@ -48,14 +48,8 @@ collections:
     public_folder: ../../assets/produse
     fields:
       - { label: Nume produs, name: nume, widget: string }
-      - label: Categorie
-        name: categorie
-        widget: relation
-        collection: setari
-        file: categorii
-        search_fields: ['categorii.*.nume']
-        value_field: 'categorii.*.slug'
-        display_fields: ['categorii.*.nume']
+      # Widget propriu (public/admin/panou.js): alegi o categorie sau adaugi una nouă direct de aici.
+      - { label: Categorie, name: categorie, widget: categorie, hint: 'Alege din listă sau „Adaugă o categorie nouă”. Categoria nouă apare automat pe site.' }
       - { label: Publicat pe site, name: publicat, widget: boolean, default: true, required: false, hint: Debifează ca să ascunzi produsul fără să-l ștergi. }
       - { label: Apare pe prima pagină, name: recomandat, widget: boolean, default: false, required: false }
       - { label: Ordine în listă, name: ordine, widget: number, value_type: int, default: 100, hint: Numerele mai mici apar primele. }
@@ -112,7 +106,7 @@ collections:
         required: false
         media_folder: /public/fise
         public_folder: /fise
-      - { label: Descriere, name: body, widget: markdown, buttons: [bold, italic, link, bulleted-list, numbered-list], editor_components: [] }
+      - { label: Descriere, name: body, widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list, numbered-list], editor_components: [] }
 
   - name: lucrari
     label: Lucrări realizate
@@ -160,7 +154,7 @@ collections:
           - { label: Borduri, value: bordura }
           - { label: Pietriș / piatră decorativă, value: pietris }
           - { label: Pași japonezi, value: pasi }
-      - { label: Descriere, name: body, widget: markdown, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
+      - { label: Descriere, name: body, widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
 
   - name: pagini
     label: Pagini
@@ -216,6 +210,7 @@ collections:
         fields:
           - { label: Titlu mare, name: titlu, widget: string }
           - { label: Subtitlu, name: subtitlu, widget: text }
+          - { label: Fotografie mare de sus, name: imagine, widget: image, required: false, media_folder: /src/assets/acasa, public_folder: /src/assets/acasa, hint: 'O fotografie lată (peisaj), de cel puțin 1920 px. Dacă lipsește, se afișează un desen cu pavaj.' }
           - label: Avantaje
             name: avantaje
             widget: list
@@ -232,11 +227,11 @@ collections:
             name: categorii
             widget: list
             summary: '{{nume}}'
-            hint: Ordinea de aici este ordinea din meniu și din catalog.
+            hint: 'Ordinea de aici este ordinea din meniu. Categoriile adăugate din formularul unui produs apar automat pe site, după acestea; adaugă-le și aici doar dacă vrei să le dai descriere, fotografie sau altă ordine (cu exact același nume).'
             fields:
-              - { label: Nume, name: nume, widget: string }
-              - { label: Adresă în site (slug), name: slug, widget: string, pattern: ['^[a-z0-9-]+$', 'Doar litere mici fără diacritice, cifre și cratimă'], hint: 'Ex.: piatra-decorativa. Nu o schimba după lansare.' }
-              - { label: Descriere, name: descriere, widget: text }
+              - { label: Nume, name: nume, widget: string, hint: 'Adresa paginii se formează din nume (ex. „Piatră decorativă” → /produse/piatra-decorativa/).' }
+              - { label: Descriere, name: descriere, widget: text, required: false }
+              - { label: Fotografie, name: imagine, widget: image, required: false, media_folder: /src/assets/categorii, public_folder: /src/assets/categorii, hint: Apare pe panoul categoriei de pe prima pagină. Dacă lipsește, se folosește prima fotografie de produs din categorie. }
               - label: Desen
                 name: forma
                 widget: select

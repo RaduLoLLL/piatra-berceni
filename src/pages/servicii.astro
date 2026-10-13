@@ -1,6 +1,6 @@
 ---
 import Baza from '../layouts/Baza.astro';
-import Firimituri from '../components/Firimituri.astro';
+import CapPagina from '../components/CapPagina.astro';
 import Icon from '../components/Icon.astro';
 import { servicii, urlOferta } from '../lib/date';
 import { schemaFirimituri } from '../lib/schema';
@@ -12,10 +12,8 @@ const pasi = [
 ---
 
 <Baza titlu="Servicii" descriere={servicii.intro} schema={[schemaFirimituri(Astro.site!, pasi)]}>
+	<CapPagina titlu="Servicii" lead={servicii.intro} pasi={pasi} />
 	<div class="container sectiune">
-		<Firimituri pasi={pasi} />
-		<h1>Servicii</h1>
-		<p class="lead">{servicii.intro}</p>
 		<ol class="servicii">
 			{
 				servicii.servicii.map((s) => (
@@ -35,27 +33,29 @@ const pasi = [
 		display: grid;
 		gap: 16px;
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-		margin: 32px 0;
+		margin: 0 0 40px;
 		padding: 0;
 		list-style: none;
 		counter-reset: serviciu;
 	}
 	.servicii li {
-		padding: 24px;
+		padding: 28px;
 		background: var(--suprafata);
-		border: 1px solid var(--linie);
-		border-radius: var(--raza);
+		border-top: 3px solid var(--accent);
 		counter-increment: serviciu;
 	}
 	.servicii li::before {
 		content: counter(serviciu, decimal-leading-zero);
 		display: block;
-		margin-bottom: 8px;
+		margin-bottom: 12px;
 		color: var(--accent);
-		font-weight: 800;
+		font-family: var(--titlu);
+		font-size: 2.5rem;
+		font-weight: 600;
+		line-height: 1;
 	}
 	.servicii h2 {
-		font-size: 1.25rem;
+		font-size: 1.625rem;
 	}
 	.servicii p {
 		margin: 0;

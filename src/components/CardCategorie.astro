@@ -1,7 +1,7 @@
 ---
+// Panou înalt cu fotografie și numele categoriei peste ea (stilul „Produsele noastre” de la site-urile de referință).
 import Imagine from './Imagine.astro';
-import Icon from './Icon.astro';
-import { urlCategorie, type Categorie, type Produs } from '../lib/date';
+import { slugCategorie, urlCategorie, type Categorie, type Produs } from '../lib/date';
 import { modelCategorie } from '../lib/vizual';
 
 interface Props {
@@ -9,8 +9,8 @@ interface Props {
 	produse: Produs[];
 }
 const { categorie, produse } = Astro.props;
-const dinCategorie = produse.filter((p) => p.data.categorie === categorie.slug);
-const foto = dinCategorie.find((p) => p.data.imagini.length)?.data.imagini[0];
+const dinCategorie = produse.filter((p) => slugCategorie(p) === categorie.slug);
+const foto = categorie.imagine ?? dinCategorie.find((p) => p.data.imagini.length)?.data.imagini[0];
 ---
 
 <a class="categorie" href={urlCategorie(categorie.slug)}>
@@ -18,67 +18,87 @@ const foto = dinCategorie.find((p) => p.data.imagini.length)?.data.imagini[0];
 		foto={foto}
 		model={modelCategorie(categorie, produse)}
 		alt=""
-		sizes="(min-width: 1240px) 280px, (min-width: 600px) 45vw, 100vw"
+		sizes="(min-width: 1280px) 320px, (min-width: 768px) 25vw, 50vw"
 		class="categorie__imagine"
 	/>
 	<span class="categorie__text">
-		<span class="categorie__nume">{categorie.nume} <Icon nume="sageata" /></span>
-		<span class="categorie__descriere">{categorie.descriere}</span>
 		<span class="categorie__numar">{dinCategorie.length} {dinCategorie.length === 1 ? 'produs' : 'produse'}</span>
+		<span class="categorie__nume">{categorie.nume}</span>
+		<span class="categorie__vezi">Vezi produsele →</span>
 	</span>
 </a>
 
 <style>
 	.categorie {
-		display: flex;
-		flex-direction: column;
-		background: var(--suprafata);
-		border: 1px solid var(--linie);
-		border-radius: var(--raza);
+		position: relative;
+		display: block;
 		overflow: hidden;
-		color: var(--text);
+		aspect-ratio: 3 / 4;
+		background: var(--piatra);
+		color: #fff;
 		text-decoration: none;
-		transition: box-shadow 0.15s, transform 0.15s;
-	}
-	.categorie:hover {
-		color: var(--text);
-		box-shadow: var(--umbra);
-		transform: translateY(-2px);
 	}
 	.categorie :global(.categorie__imagine) {
+		position: absolute;
+		inset: 0;
 		width: 100%;
-		aspect-ratio: 16 / 9;
+		height: 100%;
 		object-fit: cover;
+		transition: transform 0.6s ease;
+	}
+	.categorie::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(180deg, rgb(0 0 0 / 0) 35%, rgb(0 0 0 / 0.72) 100%);
+	}
+	.categorie:hover {
+		color: #fff;
+	}
+	.categorie:hover :global(.categorie__imagine) {
+		transform: scale(1.05);
 	}
 	.categorie__text {
+		position: absolute;
+		inset: auto 0 0 0;
+		z-index: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
-		padding: 16px 18px 18px;
+		gap: 4px;
+		padding: clamp(16px, 2vw, 28px);
 	}
-	.categorie__nume {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 1.25rem;
-		font-weight: 750;
-		letter-spacing: -0.01em;
-	}
-	.categorie__nume :global(svg) {
-		width: 20px;
-		color: var(--accent);
-		transition: transform 0.15s;
-	}
-	.categorie:hover .categorie__nume :global(svg) {
-		transform: translateX(4px);
-	}
-	.categorie__descriere {
-		color: var(--text-2);
-		font-size: 0.9375rem;
+	.categorie__numar,
+	.categorie__vezi {
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
 	}
 	.categorie__numar {
-		font-size: 0.8125rem;
-		font-weight: 700;
-		color: var(--accent);
+		opacity: 0.8;
+	}
+	.categorie__nume {
+		font-family: var(--titlu);
+		font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+		font-weight: 600;
+		line-height: 1;
+		text-transform: uppercase;
+	}
+	.categorie__vezi {
+		margin-top: 8px;
+		opacity: 0;
+		transform: translateY(6px);
+		transition: opacity 0.2s, transform 0.2s;
+	}
+	.categorie:hover .categorie__vezi,
+	.categorie:focus-visible .categorie__vezi {
+		opacity: 1;
+		transform: none;
+	}
+	@media (hover: none) {
+		.categorie__vezi {
+			opacity: 1;
+			transform: none;
+		}
 	}
 </style>

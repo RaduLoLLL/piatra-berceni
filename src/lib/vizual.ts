@@ -1,6 +1,6 @@
 import type { Forma } from './constante';
 import { urlModel } from './modele';
-import type { Categorie, Lucrare, Produs } from './date';
+import { slugCategorie, type Categorie, type Lucrare, type Produs } from './date';
 
 // Ce desen de rezervă primește fiecare tip de pagină. Endpoint-ul /modele/ generează exact aceste combinații.
 
@@ -11,7 +11,7 @@ export const URL_FUNDAL = '/modele/fundal.svg';
 export const modelProdus = (p: Produs) => ({ forma: p.data.forma, culori: p.data.culori });
 
 export function modelCategorie(c: Categorie, produse: Produs[]) {
-	const primul = produse.find((p) => p.data.categorie === c.slug);
+	const primul = produse.find((p) => slugCategorie(p) === c.slug);
 	return { forma: c.forma, culori: primul?.data.culori.slice(0, 2) ?? ['gri'] };
 }
 

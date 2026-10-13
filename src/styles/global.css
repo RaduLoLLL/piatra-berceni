@@ -1,23 +1,25 @@
 :root {
-	--fundal: #f6f4ef;
+	--fundal: #f8f6f2;
 	--suprafata: #ffffff;
-	--suprafata-2: #efebe3;
-	--text: #1d1b18;
-	--text-2: #5c574f;
-	--linie: #e2ddd2;
-	--accent: #b3432a;
-	--accent-inchis: #8f3420;
+	--suprafata-2: #efebe4;
+	--text: #1b1a18;
+	--text-2: #66605a;
+	--linie: #e4dfd6;
+	--accent: #b8402a;
+	--accent-inchis: #93311f;
 	--accent-text: #ffffff;
-	--piatra: #2a2825;
-	--piatra-text: #ece8e0;
-	--piatra-text-2: #b3ada2;
+	--piatra: #1e1c1a;
+	--piatra-2: #2b2825;
+	--piatra-text: #efebe4;
+	--piatra-text-2: #aaa39a;
+	--salvie: #5d6b58;
 	--verde: #1f7a4d;
 
 	--font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-	--raza: 10px;
-	--raza-mica: 6px;
-	--umbra: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 16px rgb(0 0 0 / 0.06);
-	--latime: 1180px;
+	--titlu: var(--font-titlu), 'Arial Narrow', sans-serif;
+	--raza: 3px;
+	--umbra: 0 2px 6px rgb(0 0 0 / 0.06), 0 12px 32px rgb(0 0 0 / 0.08);
+	--latime: 1280px;
 	--margine: 16px;
 	--inaltime-bara: 64px;
 
@@ -66,28 +68,30 @@ svg {
 	height: auto;
 }
 
+/* Titlurile: font condensat, majuscule, ca la site-urile de referință. */
 h1,
 h2,
 h3 {
-	line-height: 1.15;
-	letter-spacing: -0.02em;
-	margin: 0 0 0.5em;
+	font-family: var(--titlu);
+	font-weight: 600;
+	line-height: 1.02;
+	letter-spacing: 0.005em;
+	text-transform: uppercase;
+	margin: 0 0 0.45em;
 	text-wrap: balance;
 }
 
 h1 {
-	font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
-	font-weight: 800;
+	font-size: clamp(2.5rem, 1.5rem + 4.2vw, 5.25rem);
 }
 
 h2 {
-	font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.125rem);
-	font-weight: 750;
+	font-size: clamp(2rem, 1.5rem + 2vw, 3.25rem);
 }
 
 h3 {
-	font-size: 1.1875rem;
-	font-weight: 700;
+	font-size: 1.375rem;
+	letter-spacing: 0.01em;
 }
 
 p {
@@ -107,7 +111,6 @@ a:hover {
 :focus-visible {
 	outline: 3px solid var(--accent);
 	outline-offset: 2px;
-	border-radius: 4px;
 }
 
 .container {
@@ -118,11 +121,11 @@ a:hover {
 }
 
 .sectiune {
-	padding-block: clamp(40px, 6vw, 80px);
+	padding-block: clamp(48px, 7vw, 104px);
 }
 
 .sectiune--alt {
-	background: var(--suprafata-2);
+	background: var(--suprafata);
 }
 
 .titlu-sectiune {
@@ -130,22 +133,55 @@ a:hover {
 	flex-wrap: wrap;
 	align-items: end;
 	justify-content: space-between;
-	gap: 8px 24px;
-	margin-bottom: 24px;
+	gap: 12px 32px;
+	margin-bottom: clamp(24px, 3vw, 40px);
 }
 
 .titlu-sectiune h2 {
 	margin: 0;
 }
 
+.titlu-sectiune p {
+	margin: 8px 0 0;
+	color: var(--text-2);
+	max-width: 52ch;
+}
+
 .supratitlu {
 	display: block;
+	margin-bottom: 12px;
+	color: var(--accent);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+}
+
+.link-sageata {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--text);
 	font-size: 0.8125rem;
 	font-weight: 700;
-	letter-spacing: 0.08em;
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.link-sageata::after {
+	content: '→';
 	color: var(--accent);
-	margin-bottom: 8px;
+	transition: transform 0.15s;
+}
+
+.link-sageata:hover {
+	color: var(--accent);
+}
+
+.link-sageata:hover::after {
+	transform: translateX(4px);
 }
 
 .text-secundar {
@@ -155,26 +191,29 @@ a:hover {
 .lead {
 	font-size: 1.1875rem;
 	color: var(--text-2);
-	max-width: 60ch;
+	max-width: 62ch;
 }
 
 .buton {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 8px;
-	min-height: 48px;
-	padding: 12px 22px;
-	border: 2px solid transparent;
+	gap: 10px;
+	min-height: 50px;
+	padding: 14px 26px;
+	border: 1px solid transparent;
 	border-radius: var(--raza);
 	background: var(--accent);
 	color: var(--accent-text);
 	font: inherit;
+	font-size: 0.8125rem;
 	font-weight: 700;
+	letter-spacing: 0.12em;
 	line-height: 1.2;
+	text-transform: uppercase;
 	text-decoration: none;
 	cursor: pointer;
-	transition: background-color 0.15s;
+	transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .buton:hover {
@@ -194,6 +233,16 @@ a:hover {
 	color: var(--fundal);
 }
 
+.buton--deschis {
+	background: var(--suprafata);
+	color: var(--text);
+}
+
+.buton--deschis:hover {
+	background: var(--fundal);
+	color: var(--accent);
+}
+
 .buton--verde {
 	background: var(--verde);
 }
@@ -203,15 +252,15 @@ a:hover {
 }
 
 .buton svg {
-	width: 20px;
-	height: 20px;
+	width: 18px;
+	height: 18px;
 	flex: none;
 }
 
 .grila {
 	display: grid;
-	gap: 20px;
-	grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+	gap: 32px 20px;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
 }
 
 .continut-text {
@@ -219,7 +268,8 @@ a:hover {
 }
 
 .continut-text h2 {
-	margin-top: 1.5em;
+	margin-top: 1.4em;
+	font-size: 1.75rem;
 }
 
 .sr-only {
@@ -236,13 +286,12 @@ a:hover {
 
 .eticheta-exemplu {
 	display: inline-block;
-	padding: 2px 8px;
-	border-radius: 999px;
+	padding: 3px 8px;
 	background: #fff3cd;
 	color: #6b4e00;
-	font-size: 0.75rem;
+	font-size: 0.6875rem;
 	font-weight: 700;
-	letter-spacing: 0.04em;
+	letter-spacing: 0.08em;
 	text-transform: uppercase;
 }
 

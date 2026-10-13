@@ -28,4 +28,6 @@ Site static pentru Piatra Berceni SRL (pavele). Prioritate: viteză și navigare
 - Conținut: `src/content/` (colecții Astro) și `src/data/*.json`, editabile din Decap CMS (`public/admin/config.yml`). Câmpurile noi trebuie adăugate în ambele locuri.
 - Nu adăuga framework-uri JS sau scripturi externe pe paginile publice; scripturile mici se scriu `is:inline`.
 - Desenele de rezervă pentru produse fără poze: `src/lib/modele.ts`, servite din `src/pages/modele/[model].svg.ts`.
+- Categoriile se identifică după **nume** (`slugify(nume)` dă adresa). Produsele pot introduce categorii noi; `getCategorii()` din `src/lib/date.ts` le adaugă automat după cele din `categorii.json`.
+- Extensiile panoului (widget `categorie`, căutare Ctrl+K): `public/admin/panou.js`, cu date din `src/pages/admin/date.json.ts`.
 - Funcții Cloudflare Pages: `functions/api/` (formular ofertă, OAuth GitHub pentru CMS).

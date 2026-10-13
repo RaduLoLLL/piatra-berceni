@@ -1,6 +1,6 @@
 ---
 nume: Bordură de grădină 50 × 20 × 5 cm
-categorie: borduri
+categorie: Borduri
 publicat: true
 recomandat: true
 ordine: 10

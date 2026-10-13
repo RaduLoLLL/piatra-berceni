@@ -1,6 +1,6 @@
 ---
 import Baza from '../layouts/Baza.astro';
-import Firimituri from '../components/Firimituri.astro';
+import CapPagina from '../components/CapPagina.astro';
 import FormularOferta from '../components/FormularOferta.astro';
 import Icon from '../components/Icon.astro';
 import { firma, linkWhatsapp } from '../lib/date';
@@ -21,9 +21,8 @@ const hartaEmbed = `https://www.google.com/maps?q=${encodeURIComponent(coordonat
 	descriere={`Sună-ne la ${firma.telefon}, scrie-ne pe WhatsApp sau cere o ofertă online. ${firma.adresa}, ${firma.localitate}, ${firma.judet}.`}
 	schema={[schemaFirma(Astro.site!), schemaFirimituri(Astro.site!, pasi)]}
 >
+	<CapPagina titlu="Contact" lead="Sună-ne, scrie-ne pe WhatsApp sau trimite o cerere de ofertă." pasi={pasi} />
 	<div class="container sectiune">
-		<Firimituri pasi={pasi} />
-		<h1>Contact</h1>
 
 		<div class="contact">
 			<div class="contact__info">

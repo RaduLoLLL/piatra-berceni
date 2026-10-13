@@ -1,17 +1,20 @@
 ---
+import { Picture } from 'astro:assets';
 import Baza from '../layouts/Baza.astro';
 import CardCategorie from '../components/CardCategorie.astro';
 import CardProdus from '../components/CardProdus.astro';
 import CardLucrare from '../components/CardLucrare.astro';
 import Icon from '../components/Icon.astro';
-import { acasa, categorii, firma, getLucrari, getProduse, linkWhatsapp, urlOferta } from '../lib/date';
+import { acasa, firma, getCategorii, getLucrari, getProduse, imagineAcasa, linkWhatsapp, urlOferta } from '../lib/date';
 import { schemaFirma } from '../lib/schema';
 import { URL_FUNDAL } from '../lib/vizual';
 
 const produse = await getProduse();
+const categorii = await getCategorii();
 const recomandate = produse.filter((p) => p.data.recomandat).slice(0, 4);
 const lucrari = (await getLucrari()).slice(0, 3);
 const whatsapp = linkWhatsapp('Bună ziua, aș dori o ofertă pentru ');
+const program = firma.program;
 ---
 
 <Baza
@@ -19,28 +22,62 @@ const whatsapp = linkWhatsapp('Bună ziua, aș dori o ofertă pentru ');
 	descriere={`${firma.slogan}. Cere ofertă online sau sună-ne: ${firma.telefon}.`}
 	schema={[schemaFirma(Astro.site!)]}
 >
-	<section class="erou" style={`--model: url(${URL_FUNDAL})`}>
+	<section class="erou">
+		{
+			imagineAcasa ? (
+				<Picture
+					src={imagineAcasa}
+					alt=""
+					formats={['avif', 'webp']}
+					widths={[640, 1024, 1440, 1920].filter((w) => w < imagineAcasa.width).concat(Math.min(imagineAcasa.width, 2400))}
+					sizes="100vw"
+					loading="eager"
+					fetchpriority="high"
+					class="erou__fundal"
+				/>
+			) : (
+				<img src={URL_FUNDAL} alt="" width="1600" height="900" fetchpriority="high" class="erou__fundal" />
+			)
+		}
 		<div class="container erou__continut">
 			<span class="supratitlu">{firma.localitate}, {firma.judet}</span>
 			<h1>{acasa.titlu}</h1>
 			<p class="erou__subtitlu">{acasa.subtitlu}</p>
 			<div class="erou__butoane">
 				<a class="buton" href="/produse/">Vezi produsele <Icon nume="sageata" /></a>
-				<a class="buton buton--contur erou__suna" href={`tel:${firma.telefon_link}`}>
-					<Icon nume="telefon" />
-					{firma.telefon}
-				</a>
+				<a class="buton buton--contur" href={urlOferta()}>Cere ofertă</a>
 			</div>
 		</div>
 	</section>
 
+	{
+		acasa.avantaje.length > 0 && (
+			<section class="avantaje" aria-label="De ce să cumperi de la noi">
+				<ul class="container">
+					{acasa.avantaje.map((a) => (
+						<li>
+							<Icon nume="bifa" />
+							<span>
+								<strong>{a.titlu}</strong>
+								<small>{a.text}</small>
+							</span>
+						</li>
+					))}
+				</ul>
+			</section>
+		)
+	}
+
 	<section class="sectiune">
 		<div class="container">
 			<div class="titlu-sectiune">
-				<h2>Ce găsești la noi</h2>
-				<a href="/produse/">Tot catalogul</a>
+				<div>
+					<span class="supratitlu">Catalog</span>
+					<h2>Produsele noastre</h2>
+				</div>
+				<a class="link-sageata" href="/produse/">Toate produsele</a>
 			</div>
-			<div class="grila">
+			<div class="categorii">
 				{categorii.map((c) => <CardCategorie categorie={c} produse={produse} />)}
 			</div>
 		</div>
@@ -51,7 +88,11 @@ const whatsapp = linkWhatsapp('Bună ziua, aș dori o ofertă pentru ');
 			<section class="sectiune sectiune--alt">
 				<div class="container">
 					<div class="titlu-sectiune">
-						<h2>Cele mai căutate</h2>
+						<div>
+							<span class="supratitlu">Recomandate</span>
+							<h2>Cele mai căutate</h2>
+						</div>
+						<a class="link-sageata" href="/produse/">Vezi tot catalogul</a>
 					</div>
 					<div class="grila">
 						{recomandate.map((p) => (
@@ -63,38 +104,49 @@ const whatsapp = linkWhatsapp('Bună ziua, aș dori o ofertă pentru ');
 		)
 	}
 
-	{
-		acasa.avantaje.length > 0 && (
-			<section class="sectiune">
-				<div class="container">
-					<h2>De ce să cumperi de la noi</h2>
-					<ul class="avantaje">
-						{acasa.avantaje.map((a) => (
-							<li>
-								<Icon nume="bifa" />
-								<div>
-									<h3>{a.titlu}</h3>
-									<p class="text-secundar">{a.text}</p>
-								</div>
-							</li>
-						))}
-					</ul>
+	<section class="depozit">
+		<div class="container depozit__grila">
+			<div class="depozit__text">
+				<span class="supratitlu">Vino la depozit</span>
+				<h2>Vezi culorile și texturile pe viu</h2>
+				<p>Pozele nu arată niciodată exact nuanța. Treci pe la noi în {firma.localitate}, vezi produsele în lumină naturală și primești pe loc o ofertă cu cantitățile necesare.</p>
+				<dl>
+					<dt><Icon nume="pin" /> Adresă</dt>
+					<dd>{firma.adresa}, {firma.localitate}, jud. {firma.judet}</dd>
+					<dt><Icon nume="ceas" /> Program</dt>
+					<dd>
+						{
+							program.map((p) => (
+								<span>
+									{p.zile}: {p.ore}
+								</span>
+							))
+						}
+					</dd>
+				</dl>
+				<div class="depozit__butoane">
+					<a class="buton buton--deschis" href={firma.link_google_maps} rel="noopener"><Icon nume="pin" /> Deschide traseul</a>
+					<a class="buton buton--contur" href={`tel:${firma.telefon_link}`}><Icon nume="telefon" /> {firma.telefon}</a>
 				</div>
-			</section>
-		)
-	}
+			</div>
+			<img class="depozit__imagine" src={URL_FUNDAL} alt="" width="1600" height="900" loading="lazy" decoding="async" />
+		</div>
+	</section>
 
 	{
 		lucrari.length > 0 && (
-			<section class="sectiune sectiune--alt">
+			<section class="sectiune">
 				<div class="container">
 					<div class="titlu-sectiune">
-						<h2>Lucrări realizate</h2>
-						<a href="/lucrari/">Toate lucrările</a>
+						<div>
+							<span class="supratitlu">Inspirație</span>
+							<h2>Lucrări realizate</h2>
+						</div>
+						<a class="link-sageata" href="/lucrari/">Toate lucrările</a>
 					</div>
-					<div class="grila">
-						{lucrari.map((l) => (
-							<CardLucrare lucrare={l} />
+					<div class="lucrari">
+						{lucrari.map((l, i) => (
+							<CardLucrare lucrare={l} mare={i === 0} />
 						))}
 					</div>
 				</div>
@@ -102,14 +154,14 @@ const whatsapp = linkWhatsapp('Bună ziua, aș dori o ofertă pentru ');
 		)
 	}
 
-	<section class="sectiune apel">
+	<section class="apel">
 		<div class="container apel__continut">
 			<div>
 				<h2>Ai nevoie de o ofertă?</h2>
 				<p>Spune-ne ce suprafață ai și ce model îți place. Îți răspundem cu prețul și cantitățile necesare.</p>
 			</div>
 			<div class="apel__butoane">
-				<a class="buton" href={urlOferta()}><Icon nume="oferta" /> Cere ofertă</a>
+				<a class="buton buton--deschis" href={urlOferta()}><Icon nume="oferta" /> Cere ofertă</a>
 				{
 					whatsapp && (
 						<a class="buton buton--verde" href={whatsapp} rel="noopener">
@@ -123,83 +175,202 @@ const whatsapp = linkWhatsapp('Bună ziua, aș dori o ofertă pentru ');
 </Baza>
 
 <style>
+	/* Imaginea mare de sus: fotografia din panou (Setări → Prima pagină) sau desenul de rezervă. */
 	.erou {
 		position: relative;
-		background: var(--piatra);
-		color: var(--piatra-text);
+		display: flex;
+		align-items: center;
+		min-height: clamp(480px, 78vh, 760px);
 		overflow: hidden;
+		background: var(--piatra);
+		color: #fff;
 	}
-	/* Fundalul cu model de pavaj, estompat spre stânga ca textul să rămână lizibil. */
-	.erou::before {
+	.erou :global(.erou__fundal) {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.erou::after {
 		content: '';
 		position: absolute;
 		inset: 0;
-		background: var(--model) right center / cover no-repeat;
-		opacity: 0.55;
-		mask-image: linear-gradient(100deg, transparent 25%, #000 85%);
+		background: linear-gradient(90deg, rgb(20 18 16 / 0.85) 0%, rgb(20 18 16 / 0.55) 50%, rgb(20 18 16 / 0.15) 100%);
 	}
 	.erou__continut {
 		position: relative;
-		padding-block: clamp(48px, 9vw, 112px);
-	}
-	.erou h1 {
-		max-width: 16ch;
+		z-index: 1;
+		padding-block: 64px;
 	}
 	.erou .supratitlu {
-		color: #e48a6f;
+		color: #f0a58f;
+	}
+	.erou h1 {
+		max-width: 17ch;
 	}
 	.erou__subtitlu {
-		max-width: 46ch;
-		font-size: 1.1875rem;
-		color: var(--piatra-text-2);
+		max-width: 44ch;
+		font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
+		color: rgb(255 255 255 / 0.82);
 	}
 	.erou__butoane {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 12px;
-		margin-top: 28px;
+		margin-top: 32px;
 	}
 	.erou .buton--contur {
-		color: var(--piatra-text);
+		color: #fff;
 	}
 	.erou .buton--contur:hover {
-		background: var(--piatra-text);
-		border-color: var(--piatra-text);
-		color: var(--piatra);
+		background: #fff;
+		border-color: #fff;
+		color: var(--text);
 	}
 
 	.avantaje {
+		background: var(--salvie);
+		color: #fff;
+	}
+	.avantaje ul {
 		display: grid;
-		gap: 24px 32px;
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-		margin: 24px 0 0;
-		padding: 0;
+		gap: 0 32px;
+		margin: 0 auto;
 		list-style: none;
 	}
 	.avantaje li {
 		display: flex;
+		align-items: flex-start;
 		gap: 12px;
+		padding-block: 20px;
+	}
+	.avantaje li + li {
+		border-top: 1px solid rgb(255 255 255 / 0.15);
 	}
 	.avantaje li > :global(svg) {
 		flex: none;
-		width: 28px;
-		height: 28px;
-		padding: 4px;
-		border-radius: 50%;
-		background: var(--accent);
-		color: var(--accent-text);
+		width: 22px;
+		height: 22px;
+		margin-top: 1px;
+		opacity: 0.9;
 	}
-	.avantaje h3 {
-		margin-bottom: 4px;
+	.avantaje strong {
+		display: block;
+		font-size: 0.8125rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
 	}
-	.avantaje p {
-		margin: 0;
+	.avantaje small {
+		display: block;
+		margin-top: 2px;
+		font-size: 0.8125rem;
+		line-height: 1.45;
+		opacity: 0.82;
+	}
+	@media (min-width: 768px) {
+		.avantaje li + li {
+			border-top: 0;
+		}
+		.avantaje li {
+			padding-block: 26px;
+		}
+	}
+
+	.categorii {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 12px;
+	}
+	@media (min-width: 900px) {
+		.categorii {
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 16px;
+		}
+	}
+
+	.depozit {
+		background: var(--piatra);
+		color: var(--piatra-text);
+	}
+	.depozit__grila {
+		display: grid;
+		align-items: center;
+		gap: 40px;
+		padding-block: clamp(56px, 7vw, 104px);
+	}
+	@media (min-width: 900px) {
+		.depozit__grila {
+			grid-template-columns: 1fr 1fr;
+			gap: 72px;
+		}
+	}
+	.depozit p {
+		color: var(--piatra-text-2);
+		max-width: 50ch;
+	}
+	.depozit dl {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 10px 24px;
+		margin: 28px 0 32px;
 		font-size: 0.9375rem;
+	}
+	.depozit dt {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		color: var(--piatra-text-2);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+	.depozit dt :global(svg) {
+		width: 16px;
+	}
+	.depozit dd {
+		display: flex;
+		flex-direction: column;
+		margin: 0;
+	}
+	.depozit__butoane {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+	.depozit .buton--contur {
+		color: var(--piatra-text);
+	}
+	.depozit .buton--contur:hover {
+		background: var(--piatra-text);
+		color: var(--piatra);
+	}
+	.depozit__imagine {
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		object-fit: cover;
+	}
+
+	.lucrari {
+		display: grid;
+		gap: 16px;
+	}
+	@media (min-width: 900px) {
+		.lucrari {
+			grid-template-columns: 3fr 2fr;
+			grid-auto-rows: 300px;
+		}
+		.lucrari :global(.lucrare--mare) {
+			grid-row: span 2;
+		}
 	}
 
 	.apel {
+		padding-block: clamp(48px, 6vw, 80px);
 		background: var(--accent);
-		color: var(--accent-text);
+		color: #fff;
 	}
 	.apel__continut {
 		display: flex;
@@ -207,6 +378,9 @@ const whatsapp = linkWhatsapp('Bună ziua, aș dori o ofertă pentru ');
 		align-items: center;
 		justify-content: space-between;
 		gap: 24px;
+	}
+	.apel h2 {
+		margin-bottom: 8px;
 	}
 	.apel p {
 		margin: 0;
@@ -217,12 +391,5 @@ const whatsapp = linkWhatsapp('Bună ziua, aș dori o ofertă pentru ');
 		display: flex;
 		flex-wrap: wrap;
 		gap: 12px;
-	}
-	.apel .buton:not(.buton--verde) {
-		background: var(--suprafata);
-		color: var(--accent);
-	}
-	.apel .buton:not(.buton--verde):hover {
-		background: var(--fundal);
 	}
 </style>

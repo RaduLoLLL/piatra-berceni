@@ -1,9 +1,11 @@
 ---
 import '../styles/global.css';
+import { Font } from 'astro:assets';
 import Antet from '../components/Antet.astro';
 import Subsol from '../components/Subsol.astro';
 import BaraMobil from '../components/BaraMobil.astro';
-import { firma } from '../lib/date';
+import Icon from '../components/Icon.astro';
+import { firma, linkWhatsapp } from '../lib/date';
 
 interface Props {
 	titlu: string;
@@ -18,6 +20,7 @@ const { titlu, descriere, schema = [], imagine, faraIndexare = false } = Astro.p
 const titluComplet = titlu === firma.nume_scurt ? titlu : `${titlu} | ${firma.nume_scurt}`;
 const canonic = new URL(Astro.url.pathname, Astro.site);
 const imagineOg = imagine ? new URL(imagine, Astro.site).href : undefined;
+const whatsapp = linkWhatsapp('Bună ziua, ');
 
 // Paginile se pre-încarcă în fundal când vizitatorul ține cursorul pe un link (Chrome/Edge),
 // așa că deschiderea lor pare instantanee. Fără JavaScript adăugat.
@@ -41,7 +44,8 @@ const reguliPreincarcare = {
 		<link rel="canonical" href={canonic} />
 		{faraIndexare && <meta name="robots" content="noindex" />}
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-		<meta name="theme-color" content="#2a2825" />
+		<Font cssVariable="--font-titlu" preload />
+		<meta name="theme-color" content="#1e1c1a" />
 		<meta property="og:type" content="website" />
 		<meta property="og:locale" content="ro_RO" />
 		<meta property="og:site_name" content={firma.nume_scurt} />
@@ -61,10 +65,46 @@ const reguliPreincarcare = {
 		</main>
 		<Subsol />
 		<BaraMobil />
+		{
+			whatsapp && (
+				<a class="whatsapp-flotant" href={whatsapp} rel="noopener" aria-label="Scrie-ne pe WhatsApp">
+					<Icon nume="chat" />
+				</a>
+			)
+		}
 	</body>
 </html>
 
 <style>
+	/* Butonul de WhatsApp din colț, doar pe ecrane mari (pe telefon e în bara de jos). */
+	.whatsapp-flotant {
+		position: fixed;
+		right: 24px;
+		bottom: 24px;
+		z-index: 40;
+		display: none;
+		place-items: center;
+		width: 56px;
+		height: 56px;
+		border-radius: 50%;
+		background: #25d366;
+		color: #fff;
+		box-shadow: 0 6px 20px rgb(0 0 0 / 0.2);
+		transition: transform 0.15s;
+	}
+	.whatsapp-flotant:hover {
+		color: #fff;
+		transform: scale(1.06);
+	}
+	.whatsapp-flotant :global(svg) {
+		width: 30px;
+		height: 30px;
+	}
+	@media (min-width: 768px) {
+		.whatsapp-flotant {
+			display: grid;
+		}
+	}
 	.sari:focus {
 		position: fixed;
 		top: 8px;

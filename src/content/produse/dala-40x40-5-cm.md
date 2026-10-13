@@ -1,6 +1,6 @@
 ---
 nume: Dală 40 × 40 cm
-categorie: pavele
+categorie: Pavele
 publicat: true
 recomandat: false
 ordine: 50

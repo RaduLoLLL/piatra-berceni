@@ -1,6 +1,6 @@
 ---
 nume: Piatră Thasos albă
-categorie: piatra-decorativa
+categorie: Piatră decorativă
 publicat: true
 recomandat: true
 ordine: 10

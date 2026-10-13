@@ -1,90 +1,29 @@
 ---
 import Baza from '../../layouts/Baza.astro';
-import Firimituri from '../../components/Firimituri.astro';
-import CardProdus from '../../components/CardProdus.astro';
-import { categorii, getProduse, urlCategorie } from '../../lib/date';
+import Catalog from '../../components/Catalog.astro';
+import { getCategorii, getProduse } from '../../lib/date';
 import { schemaFirimituri } from '../../lib/schema';
 
 const produse = await getProduse();
+const categorii = await getCategorii();
 const pasi = [
 	{ nume: 'Acasă', url: '/' },
 	{ nume: 'Produse', url: '/produse/' },
 ];
+const numeCategorii = categorii.map((c) => c.nume.toLowerCase()).join(', ');
 ---
 
 <Baza
 	titlu="Produse"
-	descriere="Catalogul complet: pavele, borduri, piatră decorativă și pași japonezi. Vezi dimensiunile, culorile și cere ofertă."
+	descriere={`Catalogul complet: ${numeCategorii}. Vezi dimensiunile, culorile și cere ofertă.`}
 	schema={[schemaFirimituri(Astro.site!, pasi)]}
 >
-	<div class="container sectiune">
-		<Firimituri pasi={pasi} />
-		<h1>Produse</h1>
-		<p class="lead">Alege o categorie sau răsfoiește toate produsele de mai jos.</p>
-
-		<nav class="sari-la" aria-label="Categorii">
-			{
-				categorii.map((c) => (
-					<a href={`#cat-${c.slug}`}>
-						{c.nume} <span>{produse.filter((p) => p.data.categorie === c.slug).length}</span>
-					</a>
-				))
-			}
-		</nav>
-
-		{
-			categorii.map((c) => {
-				const lista = produse.filter((p) => p.data.categorie === c.slug);
-				return (
-					lista.length > 0 && (
-						<section class="grup" aria-labelledby={`cat-${c.slug}`}>
-							<div class="titlu-sectiune">
-								<h2 id={`cat-${c.slug}`}>{c.nume}</h2>
-								<a href={urlCategorie(c.slug)}>Vezi categoria</a>
-							</div>
-							<div class="grila">
-								{lista.map((p) => (
-									<CardProdus produs={p} />
-								))}
-							</div>
-						</section>
-					)
-				);
-			})
-		}
-	</div>
+	<Catalog
+		titlu="Toate produsele"
+		descriere="Alege o categorie din stânga sau filtrează după grosime și culoare."
+		produse={produse}
+		toateProdusele={produse}
+		categorii={categorii}
+		pasi={pasi}
+	/>
 </Baza>
-
-<style>
-	.sari-la {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-		margin-top: 20px;
-	}
-	.sari-la a {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		min-height: 44px;
-		padding: 8px 16px;
-		border: 1px solid var(--linie);
-		border-radius: 999px;
-		background: var(--suprafata);
-		color: var(--text);
-		font-weight: 600;
-		text-decoration: none;
-	}
-	.sari-la a:hover {
-		border-color: var(--accent);
-		color: var(--accent);
-	}
-	.sari-la span {
-		color: var(--text-2);
-		font-size: 0.8125rem;
-	}
-	.grup {
-		margin-top: 48px;
-		scroll-margin-top: 16px;
-	}
-</style>

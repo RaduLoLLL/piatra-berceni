@@ -1,7 +1,7 @@
 ---
 import { render } from 'astro:content';
 import Baza from '../../layouts/Baza.astro';
-import Firimituri from '../../components/Firimituri.astro';
+import CapPagina from '../../components/CapPagina.astro';
 import Imagine from '../../components/Imagine.astro';
 import Icon from '../../components/Icon.astro';
 import { firma, getLucrari, getProduse, urlOferta, urlProdus, type Lucrare } from '../../lib/date';
@@ -29,13 +29,10 @@ const pasi = [
 ---
 
 <Baza titlu={d.titlu} descriere={`${d.titlu} în ${d.localitate}. Lucrare realizată cu materiale de la ${firma.nume_scurt}.`} schema={[schemaFirimituri(Astro.site!, pasi)]}>
+	<CapPagina titlu={d.titlu} lead={`${d.localitate} · ${luna}${d.suprafata_mp ? ` · ${d.suprafata_mp} m²` : ''}`} pasi={pasi}>
+		{d.exemplu && <span slot="inainte" class="eticheta-exemplu">Exemplu</span>}
+	</CapPagina>
 	<div class="container sectiune">
-		<Firimituri pasi={pasi} />
-		{d.exemplu && <span class="eticheta-exemplu">Exemplu</span>}
-		<h1>{d.titlu}</h1>
-		<p class="lead">
-			{d.localitate} · {luna}{d.suprafata_mp && ` · ${d.suprafata_mp} m²`}
-		</p>
 
 		<div class="galerie">
 			{
@@ -77,13 +74,12 @@ const pasi = [
 		display: grid;
 		gap: 12px;
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
-		margin: 24px 0 32px;
+		margin: 0 0 40px;
 	}
 	.galerie :global(img) {
 		width: 100%;
 		aspect-ratio: 3 / 2;
 		object-fit: cover;
-		border-radius: var(--raza);
 	}
 	.detalii {
 		display: grid;
@@ -95,14 +91,13 @@ const pasi = [
 		}
 	}
 	aside {
-		padding: 20px;
+		padding: 28px;
 		background: var(--suprafata);
-		border: 1px solid var(--linie);
-		border-radius: var(--raza);
+		border-top: 3px solid var(--accent);
 		align-self: start;
 	}
 	aside h2 {
-		font-size: 1.125rem;
+		font-size: 1.5rem;
 	}
 	aside ul {
 		padding-left: 20px;

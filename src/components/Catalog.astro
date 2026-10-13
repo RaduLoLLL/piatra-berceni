@@ -1,0 +1,312 @@
+---
+// Pagina de catalog: categorii și filtre în stânga, produse în dreapta. Filtrele merg fără reîncărcarea paginii;
+// fără JavaScript se văd pur și simplu toate produsele.
+import Firimituri from './Firimituri.astro';
+import CardProdus from './CardProdus.astro';
+import { slugCategorie, urlCategorie, urlOferta, type Categorie, type Produs } from '../lib/date';
+import { NUME_CULORI } from '../lib/constante';
+
+interface Props {
+	titlu: string;
+	descriere?: string;
+	produse: Produs[];
+	toateProdusele: Produs[];
+	categorii: Categorie[];
+	activ?: string;
+	pasi: { nume: string; url: string }[];
+}
+const { titlu, descriere, produse, toateProdusele, categorii, activ, pasi } = Astro.props;
+
+// Filtrele apar doar dacă au sens (cel puțin două opțiuni diferite).
+const culori = [...new Set(produse.flatMap((p) => p.data.culori))];
+const grosimi = [...new Set(produse.map((p) => p.data.grosime_cm).filter((g): g is number => !!g))].sort((a, b) => a - b);
+const areFiltre = produse.length > 2 && (culori.length > 1 || grosimi.length > 1);
+const numar = (slug: string) => toateProdusele.filter((p) => slugCategorie(p) === slug).length;
+---
+
+<div class="catalog__cap">
+	<div class="container">
+		<Firimituri pasi={pasi} />
+		<h1>{titlu}</h1>
+		{descriere && <p class="lead">{descriere}</p>}
+	</div>
+</div>
+
+<div class="container catalog">
+	<aside class="catalog__lateral">
+		<nav aria-label="Categorii de produse">
+			<h2>Categorii</h2>
+			<ul class="catalog__categorii">
+				<li>
+					<a href="/produse/" aria-current={!activ ? 'page' : undefined}>
+						Toate produsele <span>{toateProdusele.length}</span>
+					</a>
+				</li>
+				{
+					categorii.map((c) => (
+						<li>
+							<a href={urlCategorie(c.slug)} aria-current={activ === c.slug ? 'page' : undefined}>
+								{c.nume} <span>{numar(c.slug)}</span>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+
+		{
+			areFiltre && (
+				<form class="filtre" id="filtre" aria-label="Filtrează produsele">
+					{grosimi.length > 1 && (
+						<fieldset>
+							<legend>Grosime</legend>
+							{grosimi.map((g) => (
+								<label>
+									<input type="checkbox" name="grosime" value={g} />
+									<span>{g} cm</span>
+								</label>
+							))}
+						</fieldset>
+					)}
+					{culori.length > 1 && (
+						<fieldset>
+							<legend>Culoare</legend>
+							{culori.map((c) => (
+								<label>
+									<input type="checkbox" name="culoare" value={c} />
+									<span>{NUME_CULORI[c] ?? c}</span>
+								</label>
+							))}
+						</fieldset>
+					)}
+				</form>
+			)
+		}
+	</aside>
+
+	<div class="catalog__produse">
+		<p class="catalog__rezultat" aria-live="polite">
+			<span id="numar-produse">{produse.length}</span>
+			{produse.length === 1 ? ' produs' : ' produse'}
+		</p>
+		{
+			produse.length > 0 ? (
+				<div class="grila" id="produse">
+					{produse.map((p, i) => (
+						<CardProdus produs={p} prioritar={i < 2} />
+					))}
+				</div>
+			) : (
+				<p>
+					Momentan nu avem produse listate aici. <a href={urlOferta()}>Întreabă-ne</a> ce avem în stoc.
+				</p>
+			)
+		}
+		<p class="catalog__nimic" hidden id="nimic">Niciun produs nu se potrivește filtrelor alese.</p>
+	</div>
+</div>
+
+{
+	areFiltre && (
+		<script is:inline>
+			(function () {
+				var form = document.getElementById('filtre');
+				var carduri = document.querySelectorAll('#produse > .card');
+				var nimic = document.getElementById('nimic');
+				var numar = document.getElementById('numar-produse');
+				function bifate(nume) {
+					return Array.prototype.map.call(form.querySelectorAll('input[name="' + nume + '"]:checked'), function (i) {
+						return i.value;
+					});
+				}
+				form.addEventListener('change', function () {
+					var g = bifate('grosime');
+					var c = bifate('culoare');
+					var vizibile = 0;
+					carduri.forEach(function (card) {
+						var culoriCard = card.dataset.culori.split('|');
+						var ok =
+							(!g.length || g.indexOf(card.dataset.grosime) > -1) &&
+							(!c.length || c.some(function (x) { return culoriCard.indexOf(x) > -1; }));
+						card.hidden = !ok;
+						if (ok) vizibile++;
+					});
+					nimic.hidden = vizibile > 0;
+					numar.textContent = vizibile;
+				});
+			})();
+		</script>
+	)
+}
+
+<style>
+	.catalog__cap {
+		padding-block: clamp(28px, 4vw, 48px) clamp(24px, 3vw, 40px);
+		background: var(--suprafata);
+		border-bottom: 1px solid var(--linie);
+	}
+	.catalog__cap h1 {
+		margin-bottom: 0.2em;
+		font-size: clamp(2.25rem, 1.6rem + 2.6vw, 4rem);
+	}
+	.catalog__cap .lead {
+		margin: 0;
+	}
+	.catalog {
+		display: grid;
+		gap: 24px 48px;
+		padding-block: 32px clamp(56px, 7vw, 96px);
+	}
+	@media (min-width: 960px) {
+		.catalog {
+			grid-template-columns: 260px 1fr;
+			padding-top: 48px;
+		}
+		.catalog__lateral {
+			position: sticky;
+			top: 24px;
+			align-self: start;
+		}
+	}
+	.catalog__lateral h2,
+	legend {
+		margin: 0 0 10px;
+		padding: 0;
+		font-family: var(--font);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--text-2);
+	}
+	.catalog__categorii {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.catalog__categorii a {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 11px 0;
+		border-bottom: 1px solid var(--linie);
+		color: var(--text);
+		font-family: var(--titlu);
+		font-size: 1.25rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		text-decoration: none;
+	}
+	.catalog__categorii a span {
+		color: var(--text-2);
+		font-family: var(--font);
+		font-size: 0.8125rem;
+	}
+	.catalog__categorii a:hover,
+	.catalog__categorii a[aria-current='page'] {
+		color: var(--accent);
+	}
+	/* Pe telefon, categoriile sunt un rând de butoane care se poate derula lateral. */
+	@media (max-width: 959px) {
+		.catalog__lateral h2 {
+			display: none;
+		}
+		.catalog__categorii {
+			display: flex;
+			gap: 8px;
+			overflow-x: auto;
+			scrollbar-width: none;
+			margin-inline: calc(var(--margine) * -1);
+			padding-inline: var(--margine);
+		}
+		.catalog__categorii a {
+			align-items: center;
+			padding: 8px 14px;
+			border: 1px solid var(--linie);
+			background: var(--suprafata);
+			font-size: 1.0625rem;
+			white-space: nowrap;
+		}
+		.catalog__categorii a[aria-current='page'] {
+			border-color: var(--text);
+			background: var(--text);
+			color: var(--fundal);
+		}
+		.catalog__categorii a[aria-current='page'] span {
+			color: inherit;
+			opacity: 0.7;
+		}
+	}
+	.filtre {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 16px 32px;
+		margin-top: 24px;
+	}
+	@media (min-width: 960px) {
+		.filtre {
+			flex-direction: column;
+			margin-top: 36px;
+		}
+	}
+	fieldset {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+	legend {
+		width: 100%;
+	}
+	.filtre label {
+		position: relative;
+		cursor: pointer;
+	}
+	.filtre input {
+		position: absolute;
+		opacity: 0;
+	}
+	.filtre label span {
+		display: inline-block;
+		padding: 6px 12px;
+		border: 1px solid var(--linie);
+		background: var(--suprafata);
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+	.filtre input:checked + span {
+		background: var(--text);
+		border-color: var(--text);
+		color: var(--fundal);
+	}
+	.filtre input:focus-visible + span {
+		outline: 3px solid var(--accent);
+		outline-offset: 2px;
+	}
+	.catalog__rezultat {
+		margin: 0 0 20px;
+		color: var(--text-2);
+		font-size: 0.8125rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+	.catalog__produse :global(.grila) {
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+	}
+	@media (max-width: 599px) {
+		.catalog__produse :global(.grila) {
+			grid-template-columns: 1fr 1fr;
+			gap: 28px 12px;
+		}
+	}
+	.catalog__nimic {
+		padding: 32px;
+		text-align: center;
+		color: var(--text-2);
+	}
+</style>

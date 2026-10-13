@@ -1,37 +1,39 @@
 ---
 import Imagine from './Imagine.astro';
-import { formatPret, urlProdus, type Produs } from '../lib/date';
+import { formatPret, slugify, urlProdus, type Produs } from '../lib/date';
 import { NUME_CULORI, CULORI } from '../lib/constante';
 import { modelProdus } from '../lib/vizual';
 
 interface Props {
 	produs: Produs;
+	/** Prima fotografie a paginii: se încarcă imediat. */
+	prioritar?: boolean;
 }
-const { produs } = Astro.props;
+const { produs, prioritar = false } = Astro.props;
 const d = produs.data;
 const pret = formatPret(produs);
+const detalii = [d.grosime_cm && `${d.grosime_cm} cm`, d.dimensiuni].filter(Boolean).join(' · ');
+// Textul după care filtrează căutarea de pe site (fără diacritice, litere mici).
+const textCautare = slugify([d.nume, d.categorie, d.rezumat, d.dimensiuni, d.utilizare, ...d.culori.map((c) => NUME_CULORI[c] ?? c)].join(' ')).replace(/-/g, ' ');
 ---
 
-<article
-	class="card"
-	data-culori={d.culori.join('|')}
-	data-grosime={d.grosime_cm ?? ''}
->
-	<Imagine
-		foto={d.imagini[0]}
-		model={modelProdus(produs)}
-		alt={d.imagini[0] ? d.nume : ''}
-		sizes="(min-width: 1240px) 280px, (min-width: 600px) 45vw, 100vw"
-		class="card__imagine"
-	/>
+<article class="card" data-culori={d.culori.join('|')} data-grosime={d.grosime_cm ?? ''} data-cauta={textCautare}>
+	<div class="card__media">
+		<Imagine
+			foto={d.imagini[0]}
+			model={modelProdus(produs)}
+			alt={d.imagini[0] ? d.nume : ''}
+			sizes="(min-width: 1280px) 300px, (min-width: 600px) 30vw, 50vw"
+			prioritar={prioritar}
+			class="card__imagine"
+		/>
+	</div>
 	<div class="card__corp">
+		<span class="card__categorie">{d.categorie}</span>
 		<h3><a href={urlProdus(produs)}>{d.nume}</a></h3>
-		<p class="card__rezumat">{d.rezumat}</p>
-		<ul class="card__detalii">
-			{d.grosime_cm && <li>{d.grosime_cm} cm</li>}
-			{d.dimensiuni && <li>{d.dimensiuni}</li>}
-		</ul>
+		{detalii && <p class="card__detalii">{detalii}</p>}
 		<div class="card__jos">
+			<span class="card__pret">{pret ?? 'Preț la cerere'}</span>
 			{
 				d.culori.length > 0 && (
 					<ul class="card__culori" aria-label="Culori disponibile">
@@ -43,7 +45,6 @@ const pret = formatPret(produs);
 					</ul>
 				)
 			}
-			<span class="card__pret">{pret ?? 'Preț la cerere'}</span>
 		</div>
 	</div>
 </article>
@@ -53,33 +54,45 @@ const pret = formatPret(produs);
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		background: var(--suprafata);
-		border: 1px solid var(--linie);
-		border-radius: var(--raza);
-		overflow: hidden;
-		transition: box-shadow 0.15s, transform 0.15s;
-	}
-	.card:hover {
-		box-shadow: var(--umbra);
-		transform: translateY(-2px);
 	}
 	.card[hidden] {
 		display: none;
 	}
+	.card__media {
+		overflow: hidden;
+		aspect-ratio: 4 / 5;
+		background: var(--suprafata-2);
+	}
 	.card :global(.card__imagine) {
 		width: 100%;
-		aspect-ratio: 4 / 3;
+		height: 100%;
 		object-fit: cover;
-		background: var(--suprafata-2);
+		transition: transform 0.6s ease;
+	}
+	.card:hover :global(.card__imagine) {
+		transform: scale(1.04);
 	}
 	.card__corp {
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-		padding: 16px 18px 18px;
+		padding-top: 14px;
+	}
+	.card__categorie {
+		color: var(--text-2);
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
 	}
 	h3 {
-		margin-bottom: 6px;
+		margin: 4px 0 4px;
+		font-family: var(--font);
+		font-size: 1.0625rem;
+		font-weight: 600;
+		line-height: 1.3;
+		letter-spacing: 0;
+		text-transform: none;
 	}
 	h3 a {
 		color: var(--text);
@@ -91,25 +104,13 @@ const pret = formatPret(produs);
 		position: absolute;
 		inset: 0;
 	}
-	.card__rezumat {
-		color: var(--text-2);
-		font-size: 0.9375rem;
-		margin-bottom: 12px;
+	.card:hover h3 a {
+		color: var(--accent);
 	}
 	.card__detalii {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-		margin: 0 0 14px;
-		padding: 0;
-		list-style: none;
-	}
-	.card__detalii li {
-		padding: 2px 10px;
-		border-radius: 999px;
-		background: var(--suprafata-2);
-		font-size: 0.8125rem;
-		font-weight: 600;
+		margin: 0 0 10px;
+		color: var(--text-2);
+		font-size: 0.875rem;
 	}
 	.card__jos {
 		display: flex;
@@ -117,6 +118,13 @@ const pret = formatPret(produs);
 		justify-content: space-between;
 		gap: 12px;
 		margin-top: auto;
+		padding-top: 10px;
+		border-top: 1px solid var(--linie);
+	}
+	.card__pret {
+		font-size: 0.875rem;
+		font-weight: 700;
+		white-space: nowrap;
 	}
 	.card__culori {
 		display: flex;
@@ -126,16 +134,10 @@ const pret = formatPret(produs);
 		list-style: none;
 	}
 	.card__culori li {
-		width: 18px;
-		height: 18px;
+		width: 14px;
+		height: 14px;
 		border-radius: 50%;
 		background: var(--c);
 		box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
-	}
-	.card__pret {
-		margin-left: auto;
-		font-weight: 700;
-		font-size: 0.9375rem;
-		white-space: nowrap;
 	}
 </style>

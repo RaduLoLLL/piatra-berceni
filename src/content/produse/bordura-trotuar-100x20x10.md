@@ -1,6 +1,6 @@
 ---
 nume: Bordură trotuar 100 × 20 × 10 cm
-categorie: borduri
+categorie: Borduri
 publicat: true
 recomandat: false
 ordine: 20

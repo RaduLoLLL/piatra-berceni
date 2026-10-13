@@ -1,0 +1,125 @@
+---
+// Căutarea din site: toate produsele sunt deja în pagină, iar un script mic le filtrează pe loc.
+// Nu e nevoie de server sau de un serviciu extern de căutare.
+import Baza from '../layouts/Baza.astro';
+import CardProdus from '../components/CardProdus.astro';
+import Icon from '../components/Icon.astro';
+import { getProduse, urlOferta } from '../lib/date';
+
+const produse = await getProduse();
+---
+
+<Baza titlu="Caută produse" descriere="Caută în catalogul de pavele, borduri și piatră decorativă." faraIndexare>
+	<div class="cap">
+		<div class="container">
+			<h1>Caută produse</h1>
+			<form class="cautare" action="/cautare/" role="search" id="form-cautare">
+				<label class="sr-only" for="q">Ce cauți?</label>
+				<Icon nume="cauta" />
+				<input id="q" type="search" name="q" placeholder="Ex.: pavele 8 cm, bordură, piatră albă…" autocomplete="off" autofocus />
+			</form>
+			<p class="rezultat" aria-live="polite" id="rezultat">{produse.length} produse</p>
+		</div>
+	</div>
+
+	<div class="container sectiune">
+		<div class="grila" id="produse">
+			{produse.map((p) => <CardProdus produs={p} />)}
+		</div>
+		<div class="nimic" id="nimic" hidden>
+			<p>Nu am găsit niciun produs. Încearcă alt cuvânt sau</p>
+			<a class="buton" href={urlOferta()}>Întreabă-ne direct</a>
+		</div>
+	</div>
+</Baza>
+
+<script is:inline>
+	(function () {
+		var input = document.getElementById('q');
+		var carduri = document.querySelectorAll('#produse > .card');
+		var rezultat = document.getElementById('rezultat');
+		var nimic = document.getElementById('nimic');
+		// Aceeași normalizare ca la generarea paginii: fără diacritice, litere mici.
+		function norm(s) {
+			return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+		}
+		function filtreaza() {
+			var cuvinte = norm(input.value).split(' ').filter(Boolean);
+			var n = 0;
+			carduri.forEach(function (c) {
+				var text = c.dataset.cauta;
+				var ok = cuvinte.every(function (w) { return text.indexOf(w) > -1; });
+				c.hidden = !ok;
+				if (ok) n++;
+			});
+			rezultat.textContent = n === 1 ? '1 produs' : n + ' produse';
+			nimic.hidden = n > 0;
+		}
+		input.value = new URLSearchParams(location.search).get('q') || '';
+		input.addEventListener('input', function () {
+			filtreaza();
+			history.replaceState(null, '', input.value ? '?q=' + encodeURIComponent(input.value) : location.pathname);
+		});
+		document.getElementById('form-cautare').addEventListener('submit', function (e) {
+			e.preventDefault();
+		});
+		filtreaza();
+	})();
+</script>
+
+<style>
+	.cap {
+		padding-block: clamp(28px, 4vw, 56px) 24px;
+		background: var(--suprafata);
+		border-bottom: 1px solid var(--linie);
+	}
+	.cap h1 {
+		font-size: clamp(2.25rem, 1.6rem + 2.6vw, 4rem);
+	}
+	.cautare {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		max-width: 720px;
+		padding: 0 18px;
+		border: 2px solid var(--text);
+		background: var(--suprafata);
+	}
+	.cautare :global(svg) {
+		flex: none;
+		width: 22px;
+		color: var(--text-2);
+	}
+	.cautare input {
+		flex: 1;
+		min-width: 0;
+		height: 56px;
+		border: 0;
+		background: transparent;
+		font: inherit;
+		font-size: 1.125rem;
+		color: var(--text);
+		outline: none;
+	}
+	.rezultat {
+		margin: 16px 0 0;
+		color: var(--text-2);
+		font-size: 0.8125rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+	.nimic {
+		padding: 32px 0;
+		text-align: center;
+	}
+	.nimic[hidden] {
+		display: none;
+	}
+	@media (max-width: 599px) {
+		#produse {
+			grid-template-columns: 1fr 1fr;
+			gap: 28px 12px;
+		}
+	}
+</style>
