@@ -5,15 +5,38 @@
 (function () {
 	'use strict';
 
+	// Utilizatorul logat, așa cum îl păstrează Decap. Fără el, nu afișăm căutarea și nu cerem datele.
+	function utilizator() {
+		try {
+			return JSON.parse(localStorage.getItem('decap-cms-user') || 'null');
+		} catch (e) {
+			return null;
+		}
+	}
+	function logat() {
+		var paginaLogare = Array.prototype.some.call(document.querySelectorAll('button'), function (b) {
+			return /^(Intră în cont|Autentifică-te( cu GitHub)?)$/.test(b.textContent.trim());
+		});
+		return Boolean(utilizator()) && !paginaLogare;
+	}
+
+	var GOL = { categorii: [], cautare: [] };
 	var date = null;
 	function incarcaDate() {
 		if (!date) {
-			date = fetch('/admin/date.json', { cache: 'no-cache' })
+			var u = utilizator();
+			// Datele sunt protejate (functions/admin/_middleware.js): le cerem cu cheia sesiunii din panou.
+			date = fetch('/admin/date.json', {
+				cache: 'no-cache',
+				headers: u && u.token ? { Authorization: 'token ' + u.token } : {},
+			})
 				.then(function (r) {
-					return r.ok ? r.json() : { categorii: [], cautare: [] };
+					if (!r.ok) throw new Error(r.status);
+					return r.json();
 				})
 				.catch(function () {
-					return { categorii: [], cautare: [] };
+					date = null; // încercăm din nou data viitoare (de exemplu, după logare)
+					return GOL;
 				});
 		}
 		return date;
@@ -159,19 +182,13 @@
 
 	window.CMS.registerWidget('categorie', ControlCategorie);
 
-	// Butonul de logare: clientul nu are cont GitHub, intră cu un cod pe email (functions/api/auth.js).
-	new MutationObserver(function () {
-		document.querySelectorAll('button').forEach(function (b) {
-			if (b.textContent.trim() === 'Autentifică-te cu GitHub') b.textContent = 'Intră în cont';
-		});
-	}).observe(document.body, { childList: true, subtree: true });
 
 	// ---------- 2. Căutarea rapidă ----------
 
 	var stil = document.createElement('style');
 	stil.textContent =
 		'.cauta-buton{position:fixed;right:20px;bottom:20px;z-index:300;display:flex;align-items:center;gap:8px;padding:12px 18px;border:0;border-radius:999px;background:#1e1c1a;color:#fff;font:600 15px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}' +
-		'.cauta-buton kbd{padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.15);font:12px system-ui,sans-serif}' +
+		'.cauta-buton[hidden]{display:none}.cauta-buton kbd{padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.15);font:12px system-ui,sans-serif}' +
 		'.cauta-fundal{position:fixed;inset:0;z-index:400;display:flex;justify-content:center;align-items:flex-start;padding:10vh 16px 16px;background:rgba(20,18,16,.55)}' +
 		'.cauta-fereastra{width:100%;max-width:640px;max-height:75vh;display:flex;flex-direction:column;overflow:hidden;border-radius:12px;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,.35);font-family:system-ui,sans-serif}' +
 		'.cauta-fereastra input{width:100%;padding:20px 22px;border:0;border-bottom:1px solid #e4dfd6;font:18px system-ui,sans-serif;outline:none}' +
@@ -187,13 +204,28 @@
 	buton.type = 'button';
 	buton.className = 'cauta-buton';
 	buton.innerHTML = '<span aria-hidden="true">⌕</span> Caută produs <kbd>Ctrl K</kbd>';
+	buton.hidden = true;
 	buton.addEventListener('click', deschide);
 	document.body.appendChild(buton);
+
+	new MutationObserver(function () {
+		// Butonul de logare: clientul nu are cont GitHub, intră cu un cod pe email (functions/api/auth.js).
+		document.querySelectorAll('button').forEach(function (b) {
+			if (b.textContent.trim() === 'Autentifică-te cu GitHub') b.textContent = 'Intră în cont';
+		});
+		// Căutarea apare doar după logare.
+		var vizibil = logat();
+		if (buton.hidden === vizibil) buton.hidden = !vizibil;
+		if (!vizibil) {
+			inchide();
+			date = null;
+		}
+	}).observe(document.body, { childList: true, subtree: true });
 
 	var fundal = null;
 
 	function deschide() {
-		if (fundal) return;
+		if (fundal || !logat()) return;
 		fundal = document.createElement('div');
 		fundal.className = 'cauta-fundal';
 		fundal.innerHTML =

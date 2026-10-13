@@ -32,7 +32,7 @@ Site static, rapid, pentru Piatra Berceni SRL (pavele, borduri, piatră decorati
 
 - **Căutare rapidă:** butonul „Caută produs” (jos, dreapta) sau **Ctrl+K**. Caută în toate produsele (inclusiv cele nepublicate) și lucrările, după nume, categorie, dimensiuni, culoare. Nu ține cont de diacritice. Produsele noi apar în căutare după următoarea publicare (~1 minut).
 - **Categorii din formular:** în câmpul „Categorie” al unui produs poți alege „＋ Adaugă o categorie nouă…”. Categoria apare automat pe site, cu pagina ei, în meniu și pe prima pagină. Descrierea, fotografia și ordinea se pot seta din Setări site → Categorii (cu exact același nume).
-- Codul acestor extensii: `public/admin/panou.js`. Datele lor: `src/pages/admin/date.json.ts` (generat la build).
+- Codul acestor extensii: `public/admin/panou.js`. Datele lor: `src/pages/admin/date.json.ts` (generat la build), servite doar utilizatorilor logați (`functions/admin/_middleware.js`). Căutarea apare doar după logare.
 
 Conținutul este validat la build (`src/content.config.ts`, `src/lib/date.ts`). O greșeală, de exemplu o categorie inexistentă, oprește publicarea în loc să strice site-ul.
 
