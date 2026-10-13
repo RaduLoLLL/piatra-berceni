@@ -30,4 +30,4 @@ Site static pentru Piatra Berceni SRL (pavele). Prioritate: viteză și navigare
 - Desenele de rezervă pentru produse fără poze: `src/lib/modele.ts`, servite din `src/pages/modele/[model].svg.ts`.
 - Categoriile se identifică după **nume** (`slugify(nume)` dă adresa). Produsele pot introduce categorii noi; `getCategorii()` din `src/lib/date.ts` le adaugă automat după cele din `categorii.json`.
 - Extensiile panoului (widget `categorie`, căutare Ctrl+K): `public/admin/panou.js`, cu date din `src/pages/admin/date.json.ts`.
-- Funcții Cloudflare Pages: `functions/api/` (formular ofertă, OAuth GitHub pentru CMS).
+- Funcții Cloudflare Pages: `functions/api/` (formular ofertă, logare în panou cu cod pe email sau GitHub, intermediar `gh/` către API-ul GitHub), cu cod comun în `server/`. Detalii în README.

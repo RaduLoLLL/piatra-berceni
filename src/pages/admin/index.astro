@@ -22,11 +22,11 @@
 		<!-- Câmpul „Categorie” cu adăugare de categorii noi și căutarea rapidă (Ctrl+K). -->
 		<script is:inline src="/admin/panou.js"></script>
 		<script is:inline>
-			// Autentificarea GitHub (functions/api/auth.js) rulează pe același domeniu ca panoul,
-			// așa că panoul merge la fel pe *.pages.dev, pe domeniul final sau pe www.
+			// Logarea (functions/api/auth.js) și intermediarul către GitHub (functions/api/gh/) rulează pe același
+			// domeniu ca panoul, așa că panoul merge la fel pe *.pages.dev, pe domeniul final sau pe www.
 			window.initCMS({
 				config: {
-					backend: { base_url: location.origin },
+					backend: { base_url: location.origin, api_root: location.origin + '/api/gh' },
 					site_url: location.origin,
 					display_url: location.origin,
 				},

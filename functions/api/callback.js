@@ -1,24 +1,9 @@
-// Autentificare GitHub pentru panoul de administrare (pasul 2: GitHub se întoarce aici cu un cod,
-// îl schimbăm pe un token și îl trimitem ferestrei panoului, după protocolul Decap CMS).
+// Logare cu GitHub pentru dezvoltator (pasul 2): GitHub se întoarce aici cu un cod,
+// îl schimbăm pe un token și îl trimitem ferestrei panoului.
+import { predaPanoului } from '../../server/pagini.js';
 
-function pagina(mesaj, continut) {
-	// "<" este codificat ca să nu poată închide eticheta <script>.
-	const sigur = JSON.stringify(continut).replace(/</g, '\\u003c');
-	return new Response(
-		`<!doctype html><html lang="ro"><meta charset="utf-8"><title>Autentificare</title><body><p>${mesaj}</p><script>
-(function () {
-	function primeste(e) {
-		if (e.origin !== location.origin) return;
-		window.removeEventListener('message', primeste);
-		window.opener.postMessage(${sigur}, e.origin);
-	}
-	window.addEventListener('message', primeste);
-	window.opener.postMessage('authorizing:github', location.origin);
-})();
-</script></body></html>`,
-		{ headers: { 'Content-Type': 'text/html; charset=utf-8', 'Set-Cookie': 'oauth_stare=; Path=/api/callback; Max-Age=0' } },
-	);
-}
+const sterge = { 'Set-Cookie': 'oauth_stare=; Path=/api/callback; Max-Age=0' };
+const eroare = (mesaj) => predaPanoului('Autentificare eșuată', 'authorization:github:error:' + JSON.stringify({ message: mesaj }), sterge);
 
 export async function onRequestGet({ request, env }) {
 	const url = new URL(request.url);
@@ -26,9 +11,7 @@ export async function onRequestGet({ request, env }) {
 	const stare = url.searchParams.get('state');
 	const cookie = (request.headers.get('Cookie') || '').match(/(?:^|;\s*)oauth_stare=([^;]+)/)?.[1];
 
-	if (!cod || !stare || stare !== cookie) {
-		return pagina('Autentificare eșuată. Închide fereastra și încearcă din nou.', 'authorization:github:error:' + JSON.stringify({ message: 'Stare invalidă' }));
-	}
+	if (!cod || !stare || stare !== cookie) return eroare('Stare invalidă');
 
 	const raspuns = await fetch('https://github.com/login/oauth/access_token', {
 		method: 'POST',
@@ -36,10 +19,7 @@ export async function onRequestGet({ request, env }) {
 		body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code: cod }),
 	});
 	const date = await raspuns.json().catch(() => ({}));
+	if (!date.access_token) return eroare(date.error_description || 'Eroare GitHub');
 
-	if (!date.access_token) {
-		return pagina('Autentificare eșuată. Închide fereastra și încearcă din nou.', 'authorization:github:error:' + JSON.stringify({ message: date.error_description || 'Eroare GitHub' }));
-	}
-
-	return pagina('Autentificare reușită. Poți închide fereastra.', 'authorization:github:success:' + JSON.stringify({ token: date.access_token, provider: 'github' }));
+	return predaPanoului('Autentificare reușită', 'authorization:github:success:' + JSON.stringify({ token: date.access_token, provider: 'github' }), sterge);
 }

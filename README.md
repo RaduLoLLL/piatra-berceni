@@ -69,13 +69,31 @@ Protecția anti-spam constă într-un câmp ascuns și o verificare de timp, fă
 
 ### Panoul de administrare online
 
-Panoul de la `/admin/` folosește autentificarea GitHub prin `functions/api/auth.js` și `functions/api/callback.js`.
+Panoul de la `/admin/` are două feluri de logare:
 
-Aplicația OAuth există deja: **Piatra Berceni CMS** (GitHub → Settings → Developer settings → OAuth Apps), cu callback `https://piatra-berceni.pages.dev/api/callback`. În Cloudflare Pages sunt setate `GITHUB_CLIENT_ID` (text) și `GITHUB_CLIENT_SECRET` (secret).
+**1. Clientul: cod pe email, fără cont GitHub**
 
-- **La mutarea pe domeniul final:** schimbă în aplicația OAuth *Homepage URL* și *Authorization callback URL* la `https://domeniul-final.ro/api/callback`. Panoul își ia singur adresa din domeniul pe care e deschis (`src/pages/admin/index.astro`), deci nu e nevoie de modificări în cod.
-- Persoana care editează are nevoie de un cont GitHub cu acces de scriere la depozit (Settings → Collaborators).
-- Token-urile GitHub expiră după 8 ore; după aceea panoul cere din nou autentificarea.
+Clientul își scrie emailul, primește un cod de 6 cifre (valabil 10 minute, maximum 5 încercări) și primește o sesiune de 12 ore. Panoul nu primește nicio cheie GitHub: cererile trec prin `functions/api/gh/`, care verifică sesiunea și lucrează cu o cheie temporară (1 oră) a aplicației GitHub **Piatra Berceni CMS**, limitată la acest depozit. Modificările apar în istoric ca făcute de aplicație, cu emailul clientului ca autor.
+
+Configurare (o singură dată):
+1. **Aplicația GitHub:** GitHub → Settings → Developer settings → GitHub Apps → *Piatra Berceni CMS*. Permisiuni: *Contents: Read and write*. Instalată doar pe `piatra-berceni`. Generează o cheie privată (fișier `.pem`).
+2. **Cloudflare Pages → Settings → Variables and Secrets:**
+   - `GITHUB_APP_ID`: ID-ul aplicației (text)
+   - `GITHUB_APP_PRIVATE_KEY`: tot conținutul fișierului `.pem` (secret)
+   - `ADMIN_EMAILURI`: adresele care au voie să intre, separate prin virgulă (text). Ca să scoți pe cineva, îi ștergi adresa.
+   - `RESEND_API_KEY` (secret) și `EMAIL_DE_LA` (text), aceleași ca la formularul de ofertă.
+3. **Cloudflare Pages → Settings → Bindings:** un KV namespace cu numele de variabilă `CMS_KV` (păstrează codurile cât sunt valabile).
+4. Un deploy nou, ca variabilele să intre în vigoare.
+
+Fără domeniu propriu verificat în Resend, emailurile pot fi trimise doar către adresa contului Resend (bun pentru test).
+
+**2. Dezvoltatorul: GitHub**
+
+În fereastra de logare: „Dezvoltator? Intră cu GitHub”. Folosește aplicația OAuth **Piatra Berceni CMS** (callback `https://piatra-berceni.pages.dev/api/callback`) și variabilele `GITHUB_CLIENT_ID` (text), `GITHUB_CLIENT_SECRET` (secret).
+
+- **La mutarea pe domeniul final:** schimbă în aplicația OAuth *Homepage URL* și *Authorization callback URL* la `https://domeniul-final.ro/api/callback`. Panoul își ia singur adresa din domeniul pe care e deschis (`src/pages/admin/index.astro`).
+
+Codul: `functions/api/auth.js`, `cod.js`, `verifica.js` (logare cu cod), `github.js`, `callback.js` (logare GitHub), `gh/[[cale]].js` (intermediarul), cu funcțiile comune în `server/`.
 
 ## Viteză
 

@@ -5,6 +5,8 @@
 //   EMAIL_CATRE     adresa unde ajung cererile, ex. contact@firma.ro
 //   EMAIL_DE_LA     expeditorul, pe un domeniu verificat în Resend, ex. "Site Piatra Berceni <site@firma.ro>"
 
+import { emailConfigurat, trimiteEmail } from '../../server/email.js';
+
 const LIMITE = { nume: 100, telefon: 30, email: 120, localitate: 80, produs: 120, suprafata: 20, mesaj: 2000 };
 
 const curat = (v, max) => String(v ?? '').replace(/\r\n?/g, '\n').trim().slice(0, max);
@@ -35,7 +37,7 @@ export async function onRequestPost({ request, env }) {
 		return redirect(request, '/contact/?eroare=1#oferta');
 	}
 
-	if (!env.RESEND_API_KEY || !env.EMAIL_CATRE || !env.EMAIL_DE_LA) {
+	if (!emailConfigurat(env) || !env.EMAIL_CATRE) {
 		console.error('Formular ofertă: lipsesc variabilele RESEND_API_KEY / EMAIL_CATRE / EMAIL_DE_LA');
 		return redirect(request, '/contact/?eroare=2#oferta');
 	}
@@ -54,22 +56,13 @@ export async function onRequestPost({ request, env }) {
 		date.mesaj || '-',
 	].join('\n');
 
-	const raspuns = await fetch('https://api.resend.com/emails', {
-		method: 'POST',
-		headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-		body: JSON.stringify({
-			from: env.EMAIL_DE_LA,
-			to: [env.EMAIL_CATRE],
-			reply_to: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(date.email) ? date.email : undefined,
-			subject: `Cerere ofertă: ${date.nume}${date.produs ? ` – ${date.produs}` : ''}`,
-			text,
-		}),
+	const trimis = await trimiteEmail(env, {
+		catre: env.EMAIL_CATRE,
+		subiect: `Cerere ofertă: ${date.nume}${date.produs ? ` – ${date.produs}` : ''}`,
+		text,
+		raspunsLa: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(date.email) ? date.email : undefined,
 	});
-
-	if (!raspuns.ok) {
-		console.error('Formular ofertă: Resend a răspuns', raspuns.status, await raspuns.text());
-		return redirect(request, '/contact/?eroare=2#oferta');
-	}
+	if (!trimis) return redirect(request, '/contact/?eroare=2#oferta');
 
 	return redirect(request, '/multumim/');
 }

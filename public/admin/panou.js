@@ -159,6 +159,13 @@
 
 	window.CMS.registerWidget('categorie', ControlCategorie);
 
+	// Butonul de logare: clientul nu are cont GitHub, intră cu un cod pe email (functions/api/auth.js).
+	new MutationObserver(function () {
+		document.querySelectorAll('button').forEach(function (b) {
+			if (b.textContent.trim() === 'Autentifică-te cu GitHub') b.textContent = 'Intră în cont';
+		});
+	}).observe(document.body, { childList: true, subtree: true });
+
 	// ---------- 2. Căutarea rapidă ----------
 
 	var stil = document.createElement('style');
